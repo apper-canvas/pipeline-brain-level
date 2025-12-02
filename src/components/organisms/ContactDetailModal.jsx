@@ -215,7 +215,7 @@ useEffect(() => {
                 {/* Add Deal Button */}
                 <div className="flex justify-between items-center">
                     <h3 className="text-lg font-semibold text-navy-500">Deals</h3>
-                    <Button onClick={() => onAddDeal(contact)}>
+<Button onClick={() => onAddDeal(contact)}>
                         <ApperIcon name="Plus" className="w-4 h-4 mr-2" />Add Deal
                                         </Button>
                 </div>
