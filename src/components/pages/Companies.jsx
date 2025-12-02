@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { companyService } from "@/services/api/companyService";
 import { quoteService } from "@/services/api/quoteService";
-import { toast } from 'react-hot-toast';
+import { toast } from 'react-toastify';
 import ApperIcon from "@/components/ApperIcon";
 import Loading from "@/components/ui/Loading";
 import ErrorView from "@/components/ui/ErrorView";
