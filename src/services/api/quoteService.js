@@ -1,24 +1,17 @@
 import { getApperClient } from '@/services/apperClient';
 
 const QUOTE_FIELDS = [
-  { "field": { "Name": "quote_number_c" } },
-  { "field": { "Name": "title_c" } },
-  { "field": { "Name": "description_c" } },
-  { "field": { "Name": "company_c" }, "referenceField": { "field": { "Name": "name_c" } } },
-  { "field": { "Name": "contact_c" }, "referenceField": { "field": { "Name": "first_name_c" } } },
-  { "field": { "Name": "deal_c" }, "referenceField": { "field": { "Name": "name_c" } } },
+  { "field": { "Name": "quoteNumber_c" } },
   { "field": { "Name": "status_c" } },
-  { "field": { "Name": "valid_until_c" } },
   { "field": { "Name": "subtotal_c" } },
-  { "field": { "Name": "tax_amount_c" } },
-  { "field": { "Name": "discount_amount_c" } },
-  { "field": { "Name": "total_amount_c" } },
-  { "field": { "Name": "currency_c" } },
-  { "field": { "Name": "terms_conditions_c" } },
+  { "field": { "Name": "taxRate_c" } },
+  { "field": { "Name": "taxAmount_c" } },
+  { "field": { "Name": "total_c" } },
+  { "field": { "Name": "validUntil_c" } },
   { "field": { "Name": "notes_c" } },
-  { "field": { "Name": "tags_c" } },
-  { "field": { "Name": "created_date_c" } },
-  { "field": { "Name": "modified_date_c" } }
+  { "field": { "Name": "customerId_c" }, "referenceField": { "field": { "Name": "Name" } } },
+  { "field": { "Name": "CreatedOn" } },
+  { "field": { "Name": "ModifiedOn" } }
 ];
 
 const QUOTE_ITEM_FIELDS = [
@@ -40,9 +33,9 @@ class QuoteService {
         throw new Error("ApperClient not initialized");
       }
 
-      const response = await apperClient.fetchRecords('quote_c', {
+const response = await apperClient.fetchRecords('quote_c', {
         fields: QUOTE_FIELDS,
-        orderBy: [{ "fieldName": "created_date_c", "sorttype": "DESC" }],
+        orderBy: [{ "fieldName": "CreatedOn", "sorttype": "DESC" }],
         pagingInfo: { "limit": 100, "offset": 0 }
       });
 
@@ -50,7 +43,18 @@ class QuoteService {
         throw new Error(response.message);
       }
 
-      return response.data || [];
+      // Transform data to match UI expectations
+      const transformedData = (response.data || []).map(quote => ({
+        ...quote,
+        quoteNumber: quote.quoteNumber_c,
+        status: quote.status_c,
+        total: quote.total_c,
+        validUntil: quote.validUntil_c,
+        customerName: quote.customerId_c_Name || 'N/A',
+        createdAt: quote.CreatedOn
+      }));
+
+      return transformedData;
     } catch (error) {
       console.error("Error fetching quotes:", error?.response?.data?.message || error);
       throw error;
@@ -72,7 +76,18 @@ class QuoteService {
         throw new Error(response.message);
       }
 
-      return response.data;
+// Transform data to match UI expectations
+      const transformedData = {
+        ...response.data,
+        quoteNumber: response.data.quoteNumber_c,
+        status: response.data.status_c,
+        total: response.data.total_c,
+        validUntil: response.data.validUntil_c,
+        customerName: response.data.customerId_c_Name || 'N/A',
+        createdAt: response.data.CreatedOn
+      };
+
+      return transformedData;
     } catch (error) {
       console.error(`Error fetching quote ${id}:`, error?.response?.data?.message || error);
       throw error;
@@ -117,23 +132,16 @@ class QuoteService {
       }
 
       // Filter out read-only fields and empty values
-      const updateableData = {};
-      if (quoteData.quote_number_c) updateableData.quote_number_c = quoteData.quote_number_c;
-      if (quoteData.title_c) updateableData.title_c = quoteData.title_c;
-      if (quoteData.description_c) updateableData.description_c = quoteData.description_c;
-      if (quoteData.company_c) updateableData.company_c = parseInt(quoteData.company_c);
-      if (quoteData.contact_c) updateableData.contact_c = parseInt(quoteData.contact_c);
-      if (quoteData.deal_c) updateableData.deal_c = parseInt(quoteData.deal_c);
+const updateableData = {};
+      if (quoteData.quoteNumber_c) updateableData.quoteNumber_c = quoteData.quoteNumber_c;
       if (quoteData.status_c) updateableData.status_c = quoteData.status_c;
-      if (quoteData.valid_until_c) updateableData.valid_until_c = quoteData.valid_until_c;
       if (quoteData.subtotal_c) updateableData.subtotal_c = parseFloat(quoteData.subtotal_c);
-      if (quoteData.tax_amount_c) updateableData.tax_amount_c = parseFloat(quoteData.tax_amount_c);
-      if (quoteData.discount_amount_c) updateableData.discount_amount_c = parseFloat(quoteData.discount_amount_c);
-      if (quoteData.total_amount_c) updateableData.total_amount_c = parseFloat(quoteData.total_amount_c);
-      if (quoteData.currency_c) updateableData.currency_c = quoteData.currency_c;
-      if (quoteData.terms_conditions_c) updateableData.terms_conditions_c = quoteData.terms_conditions_c;
+      if (quoteData.taxRate_c) updateableData.taxRate_c = parseFloat(quoteData.taxRate_c);
+      if (quoteData.taxAmount_c) updateableData.taxAmount_c = parseFloat(quoteData.taxAmount_c);
+      if (quoteData.total_c) updateableData.total_c = parseFloat(quoteData.total_c);
+      if (quoteData.validUntil_c) updateableData.validUntil_c = quoteData.validUntil_c;
       if (quoteData.notes_c) updateableData.notes_c = quoteData.notes_c;
-      if (quoteData.tags_c) updateableData.tags_c = quoteData.tags_c;
+      if (quoteData.customerId_c) updateableData.customerId_c = parseInt(quoteData.customerId_c);
 
       const params = {
         records: [updateableData]
@@ -227,23 +235,16 @@ class QuoteService {
       }
 
       // Filter out read-only fields and empty values
-      const updateableData = { Id: parseInt(id) };
-      if (quoteData.quote_number_c) updateableData.quote_number_c = quoteData.quote_number_c;
-      if (quoteData.title_c) updateableData.title_c = quoteData.title_c;
-      if (quoteData.description_c) updateableData.description_c = quoteData.description_c;
-      if (quoteData.company_c) updateableData.company_c = parseInt(quoteData.company_c);
-      if (quoteData.contact_c) updateableData.contact_c = parseInt(quoteData.contact_c);
-      if (quoteData.deal_c) updateableData.deal_c = parseInt(quoteData.deal_c);
+const updateableData = { Id: parseInt(id) };
+      if (quoteData.quoteNumber_c) updateableData.quoteNumber_c = quoteData.quoteNumber_c;
       if (quoteData.status_c) updateableData.status_c = quoteData.status_c;
-      if (quoteData.valid_until_c) updateableData.valid_until_c = quoteData.valid_until_c;
       if (quoteData.subtotal_c) updateableData.subtotal_c = parseFloat(quoteData.subtotal_c);
-      if (quoteData.tax_amount_c) updateableData.tax_amount_c = parseFloat(quoteData.tax_amount_c);
-      if (quoteData.discount_amount_c) updateableData.discount_amount_c = parseFloat(quoteData.discount_amount_c);
-      if (quoteData.total_amount_c) updateableData.total_amount_c = parseFloat(quoteData.total_amount_c);
-      if (quoteData.currency_c) updateableData.currency_c = quoteData.currency_c;
-      if (quoteData.terms_conditions_c) updateableData.terms_conditions_c = quoteData.terms_conditions_c;
+      if (quoteData.taxRate_c) updateableData.taxRate_c = parseFloat(quoteData.taxRate_c);
+      if (quoteData.taxAmount_c) updateableData.taxAmount_c = parseFloat(quoteData.taxAmount_c);
+      if (quoteData.total_c) updateableData.total_c = parseFloat(quoteData.total_c);
+      if (quoteData.validUntil_c) updateableData.validUntil_c = quoteData.validUntil_c;
       if (quoteData.notes_c) updateableData.notes_c = quoteData.notes_c;
-      if (quoteData.tags_c) updateableData.tags_c = quoteData.tags_c;
+      if (quoteData.customerId_c) updateableData.customerId_c = parseInt(quoteData.customerId_c);
 
       const params = {
         records: [updateableData]
