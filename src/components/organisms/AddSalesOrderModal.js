@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-const [formData, setFormData] = useState({
+
+function AddSalesOrderModal({ isOpen, onClose, onSubmit }) {
+  const [formData, setFormData] = useState({
     Name: '',
     Tags: '',
     order_date_c: new Date().toISOString().split('T')[0],
@@ -10,3 +12,8 @@ const [formData, setFormData] = useState({
     billing_address_c: '',
     notes_c: ''
   });
+
+  return null; // Placeholder return - component structure needs completion
+}
+
+export default AddSalesOrderModal;
