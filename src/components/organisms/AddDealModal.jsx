@@ -141,8 +141,8 @@ await dealService.create({
             error={errors.contactId}
 options={contacts.map(contact => ({
               value: contact.Id.toString(),
-              label: `${contact.first_name_c || ''} ${contact.last_name_c || ''}`.trim() + 
-                     (contact.company_c?.name_c ? ` - ${contact.company_c.name_c}` : '')
+              label: `${contact.Name || 'Unnamed Contact'}` + 
+                     (contact.company_c ? ` - ${contact.company_c}` : '')
             }))}
           />
 
