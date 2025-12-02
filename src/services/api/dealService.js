@@ -101,21 +101,14 @@ async create(dealData) {
         throw new Error("ApperClient not initialized");
       }
 
-      // Filter out read-only fields and empty values
+      // Filter out read-only fields and empty values - use correct field names from deal_c schema
       const updateableData = {};
-      if (dealData.name_c && dealData.name_c.trim() !== '') updateableData.name_c = dealData.name_c;
+      if (dealData.title_c && dealData.title_c.trim() !== '') updateableData.title_c = dealData.title_c;
       if (dealData.value_c !== undefined && dealData.value_c !== null && dealData.value_c !== '') updateableData.value_c = parseFloat(dealData.value_c);
-      if (dealData.stage_c !== undefined && dealData.stage_c !== null && dealData.stage_c !== '') updateableData.stage_c = parseInt(dealData.stage_c);
-      if (dealData.probability_c !== undefined && dealData.probability_c !== null && dealData.probability_c !== '') updateableData.probability_c = parseFloat(dealData.probability_c);
-      if (dealData.expected_close_date_c && dealData.expected_close_date_c.trim() !== '') updateableData.expected_close_date_c = dealData.expected_close_date_c;
-      if (dealData.company_c !== undefined && dealData.company_c !== null && dealData.company_c !== '') updateableData.company_c = parseInt(dealData.company_c);
-      if (dealData.contact_c !== undefined && dealData.contact_c !== null && dealData.contact_c !== '') updateableData.contact_c = parseInt(dealData.contact_c);
-      if (dealData.description_c && dealData.description_c.trim() !== '') updateableData.description_c = dealData.description_c;
-      if (dealData.source_c && dealData.source_c.trim() !== '') updateableData.source_c = dealData.source_c;
-      if (dealData.priority_c && dealData.priority_c.trim() !== '') updateableData.priority_c = dealData.priority_c;
-      if (dealData.status_c && dealData.status_c.trim() !== '') updateableData.status_c = dealData.status_c;
-      if (dealData.tags_c && dealData.tags_c.trim() !== '') updateableData.tags_c = dealData.tags_c;
-
+      if (dealData.stage_c !== undefined && dealData.stage_c !== null && dealData.stage_c !== '') updateableData.stage_c = dealData.stage_c;
+      if (dealData.notes_c && dealData.notes_c.trim() !== '') updateableData.notes_c = dealData.notes_c;
+      if (dealData.contactId_c !== undefined && dealData.contactId_c !== null && dealData.contactId_c !== '') updateableData.contactId_c = parseInt(dealData.contactId_c);
+      if (dealData.Tags && dealData.Tags.trim() !== '') updateableData.Tags = dealData.Tags;
       // Ensure we have at least one field
       if (Object.keys(updateableData).length === 0) {
         throw new Error("No valid fields provided for deal creation");
