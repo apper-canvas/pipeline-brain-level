@@ -70,12 +70,12 @@ const handleSubmit = async (e) => {
     try {
       setLoading(true)
       
-      await dealService.create({
-        contactId: parseInt(formData.contactId),
-        title: formData.title,
-        value: parseFloat(formData.value),
-        stage: formData.stage,
-        notes: formData.notes
+await dealService.create({
+        contact_c: parseInt(formData.contactId),
+        name_c: formData.title,
+        value_c: parseFloat(formData.value),
+        stage_c: formData.stage,
+        description_c: formData.notes
       })
 
       toast.success("Deal created successfully!")
