@@ -2,9 +2,10 @@ import { forwardRef } from 'react'
 import { cn } from '@/utils/cn'
 
 const Button = forwardRef(({ className, variant = "primary", size = "default", children, ...props }, ref) => {
-  const variants = {
+const variants = {
     primary: "bg-gradient-to-r from-coral-500 to-red-500 text-white hover:from-coral-600 hover:to-red-600 shadow-lg hover:shadow-xl",
     secondary: "border-2 border-navy-500 text-navy-500 hover:bg-navy-500 hover:text-white bg-white",
+    outline: "border-2 border-gray-300 text-gray-700 hover:bg-gray-50 bg-white",
     ghost: "text-navy-500 hover:bg-navy-50 border-transparent",
     danger: "bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700",
     success: "bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700"
