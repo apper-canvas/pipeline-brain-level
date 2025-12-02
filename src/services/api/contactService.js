@@ -71,34 +71,20 @@ class ContactService {
     }
   }
 
-  async create(contactData) {
+async create(contactData) {
     try {
       const apperClient = getApperClient();
       if (!apperClient) {
         throw new Error("ApperClient not initialized");
       }
 
-      // Filter out read-only fields and empty values
+      // Filter out read-only fields and empty values based on contact_c schema
       const updateableData = {};
-      if (contactData.first_name_c) updateableData.first_name_c = contactData.first_name_c;
-      if (contactData.last_name_c) updateableData.last_name_c = contactData.last_name_c;
+      if (contactData.Name) updateableData.Name = contactData.Name;
+      if (contactData.Tags) updateableData.Tags = contactData.Tags;
+      if (contactData.company_c) updateableData.company_c = contactData.company_c;
       if (contactData.email_c) updateableData.email_c = contactData.email_c;
       if (contactData.phone_c) updateableData.phone_c = contactData.phone_c;
-      if (contactData.title_c) updateableData.title_c = contactData.title_c;
-      if (contactData.department_c) updateableData.department_c = contactData.department_c;
-      if (contactData.company_c) updateableData.company_c = parseInt(contactData.company_c);
-      if (contactData.address_c) updateableData.address_c = contactData.address_c;
-      if (contactData.city_c) updateableData.city_c = contactData.city_c;
-      if (contactData.state_c) updateableData.state_c = contactData.state_c;
-      if (contactData.postal_code_c) updateableData.postal_code_c = contactData.postal_code_c;
-      if (contactData.country_c) updateableData.country_c = contactData.country_c;
-      if (contactData.date_of_birth_c) updateableData.date_of_birth_c = contactData.date_of_birth_c;
-      if (contactData.linkedin_profile_c) updateableData.linkedin_profile_c = contactData.linkedin_profile_c;
-      if (contactData.twitter_handle_c) updateableData.twitter_handle_c = contactData.twitter_handle_c;
-      if (contactData.status_c) updateableData.status_c = contactData.status_c;
-      if (contactData.source_c) updateableData.source_c = contactData.source_c;
-      if (contactData.tags_c) updateableData.tags_c = contactData.tags_c;
-      if (contactData.notes_c) updateableData.notes_c = contactData.notes_c;
 
       const params = {
         records: [updateableData]

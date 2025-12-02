@@ -8,12 +8,12 @@ import Button from "@/components/atoms/Button";
 import FormField from "@/components/molecules/FormField";
 
 const AddContactModal = ({ isOpen, onClose, onSuccess }) => {
-  const [formData, setFormData] = useState({
-    name: "",
-    company: "",
-    email: "",
-    phone: "",
-    tags: []
+const [formData, setFormData] = useState({
+    Name: "",
+    company_c: "",
+    email_c: "",
+    phone_c: "",
+    Tags: ""
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -37,17 +37,17 @@ if (!formData.name.trim()) newErrors.name = "Name is required";
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    if (!validateForm()) return
+if (!validateForm()) return
 
     try {
       setLoading(true)
       
       await contactService.create({
-        name: formData.name.trim(),
-        company: formData.company.trim(),
-        email: formData.email.trim(),
-        phone: formData.phone.trim(),
-        tags: ["warm"] // Default tag
+        Name: formData.Name.trim(),
+        company_c: formData.company_c.trim(),
+        email_c: formData.email_c.trim(),
+        phone_c: formData.phone_c.trim(),
+        Tags: "warm" // Default tag as string for Tag type field
       })
 
       toast.success("Contact created successfully!")
