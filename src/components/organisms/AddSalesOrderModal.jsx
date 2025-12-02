@@ -5,7 +5,7 @@ import Input from '@/components/atoms/Input';
 import Label from '@/components/atoms/Label';
 import Select from '@/components/atoms/Select';
 import FormField from '@/components/molecules/FormField';
-import companyService from '@/services/api/companyService';
+import { companyService } from '@/services/api/companyService';
 import contactService from '@/services/api/contactService';
 import quoteService from '@/services/api/quoteService';
 
