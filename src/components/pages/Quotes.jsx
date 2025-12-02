@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { create as createCompany, getAll as getAllCompanies, update as updateCompany } from "@/services/api/companyService";
 import { quoteService } from "@/services/api/quoteService";
 import { formatDistanceToNow } from "date-fns";
-import { toast } from "react-hot-toast";
+import { toast } from "react-toastify";
 import ApperIcon from "@/components/ApperIcon";
 import Loading from "@/components/ui/Loading";
 import ErrorView from "@/components/ui/ErrorView";
