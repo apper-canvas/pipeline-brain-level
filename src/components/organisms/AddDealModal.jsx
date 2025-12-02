@@ -167,9 +167,9 @@ const handleSubmit = async (e) => {
             placeholder="Select a stage"
             required
             error={errors.stage}
-            options={stages.map(stage => ({
-              value: stage.name.toLowerCase(),
-              label: stage.name
+options={stages.map(stage => ({
+              value: stage.name?.toLowerCase() || 'unknown',
+              label: stage.name || 'Unknown Stage'
             }))}
           />
 
