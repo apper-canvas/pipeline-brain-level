@@ -74,17 +74,13 @@ const PipelineBoard = ({ onEditDeal, onViewDeal, onAddDeal }) => {
     return getDealsForStage(stageId).reduce((sum, deal) => sum + (deal.value_c || 0), 0);
   };
 
-  const getDealsByStage = (stageName) => {
-    return deals.filter(deal => deal.stage === stageName.toLowerCase());
-  };
-
-  const getContactById = (contactId) => {
+const getContactById = (contactId) => {
     return contacts.find(contact => contact.Id === contactId);
   };
 
-  const calculateStageTotal = (stageName) => {
-    const stageDeals = getDealsByStage(stageName);
-    return stageDeals.reduce((total, deal) => total + (deal.value || 0), 0);
+  const calculateStageTotal = (stageId) => {
+    const stageDeals = getDealsForStage(stageId);
+    return stageDeals.reduce((total, deal) => total + (deal.value_c || 0), 0);
   };
 
   if (loading) return <Loading />;
@@ -104,13 +100,13 @@ const PipelineBoard = ({ onEditDeal, onViewDeal, onAddDeal }) => {
   return (
     <div className="h-full">
       <div className="flex gap-6 overflow-x-auto pb-4 min-h-[600px]">
-        {stages.map((stage) => (
+{stages.map((stage) => (
           <PipelineColumn
             key={stage.Id}
             stage={stage}
-            deals={getDealsByStage(stage.name)}
+            deals={getDealsForStage(stage.Id)}
             contacts={contacts}
-            total={calculateStageTotal(stage.name)}
+            total={calculateStageTotal(stage.Id)}
             onDragEnd={handleDragEnd}
             onEditDeal={onEditDeal}
             onViewDeal={onViewDeal}
