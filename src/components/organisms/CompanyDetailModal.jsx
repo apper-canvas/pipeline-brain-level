@@ -37,8 +37,8 @@ const CompanyDetailModal = ({ isOpen, onClose, company, onEdit, onDelete }) => {
       <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">
-            {company.name || company.name_c || 'Company Details'}
+<h2 className="text-xl font-semibold text-gray-900">
+            {company.Name || company.name_c || 'Company Details'}
           </h2>
           <button
             onClick={onClose}
@@ -66,8 +66,8 @@ const CompanyDetailModal = ({ isOpen, onClose, company, onEdit, onDelete }) => {
               )}
 
               <div>
-                <span className="text-sm text-gray-500">Created Date</span>
-                <div className="mt-1 text-navy-500">{formatDate(company.createdAt || company.created_date)}</div>
+<span className="text-sm text-gray-500">Created Date</span>
+                <div className="mt-1 text-navy-500">{formatDate(company.CreatedOn || company.createdAt || company.created_date)}</div>
               </div>
 
               <div>

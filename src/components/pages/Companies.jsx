@@ -223,22 +223,22 @@ const Companies = () => {
               </div>
 
               <div className="space-y-2">
-                {company.email && (
+{company.email_c && (
                   <div className="flex items-center text-sm text-gray-600">
                     <ApperIcon name="Mail" className="w-4 h-4 mr-2 shrink-0" />
-                    <span className="truncate">{company.email}</span>
+                    <span className="truncate">{company.email_c}</span>
                   </div>
                 )}
-                {company.phone && (
+                {company.phone_c && (
                   <div className="flex items-center text-sm text-gray-600">
                     <ApperIcon name="Phone" className="w-4 h-4 mr-2 shrink-0" />
-                    <span>{company.phone}</span>
+                    <span>{company.phone_c}</span>
                   </div>
                 )}
-                {company.website && (
+                {company.website_c && (
                   <div className="flex items-center text-sm text-gray-600">
                     <ApperIcon name="Globe" className="w-4 h-4 mr-2 shrink-0" />
-                    <span className="truncate">{company.website}</span>
+                    <span className="truncate">{company.website_c}</span>
                   </div>
                 )}
               </div>
