@@ -207,11 +207,11 @@ const Companies = () => {
               key={company.Id}
               className="bg-white p-6 rounded-lg shadow-card hover:shadow-lifted transition-shadow duration-200 cursor-pointer"
               onClick={() => handleViewCompany(company)}
-            >
+>
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-navy-500 mb-1">
-                    {company.name}
+                    {company.Name}
                   </h3>
                   {company.industry && (
                     <span className="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
