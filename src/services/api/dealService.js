@@ -1,20 +1,18 @@
 import { getApperClient } from '@/services/apperClient';
 
 const DEAL_FIELDS = [
-  { "field": { "Name": "name_c" } },
+  { "field": { "Name": "Id" } },
+  { "field": { "Name": "Name" } },
+  { "field": { "Name": "Tags" } },
+  { "field": { "Name": "title_c" } },
   { "field": { "Name": "value_c" } },
-  { "field": { "Name": "stage_c" }, "referenceField": { "field": { "Name": "name_c" } } },
-  { "field": { "Name": "probability_c" } },
-  { "field": { "Name": "expected_close_date_c" } },
-  { "field": { "Name": "company_c" }, "referenceField": { "field": { "Name": "name_c" } } },
-  { "field": { "Name": "contact_c" }, "referenceField": { "field": { "Name": "first_name_c" } } },
-  { "field": { "Name": "description_c" } },
-  { "field": { "Name": "source_c" } },
-  { "field": { "Name": "priority_c" } },
-  { "field": { "Name": "status_c" } },
-  { "field": { "Name": "tags_c" } },
-  { "field": { "Name": "created_date_c" } },
-  { "field": { "Name": "modified_date_c" } }
+  { "field": { "Name": "stage_c" } },
+  { "field": { "Name": "notes_c" } },
+  { "field": { "Name": "contactId_c" }, "referenceField": { "field": { "Name": "Name" } } },
+  { "field": { "Name": "CreatedOn" } },
+  { "field": { "Name": "CreatedBy" }, "referenceField": { "field": { "Name": "Name" } } },
+  { "field": { "Name": "ModifiedOn" } },
+  { "field": { "Name": "ModifiedBy" }, "referenceField": { "field": { "Name": "Name" } } }
 ];
 
 class DealService {
@@ -27,7 +25,7 @@ class DealService {
 
       const response = await apperClient.fetchRecords('deal_c', {
         fields: DEAL_FIELDS,
-        orderBy: [{ "fieldName": "created_date_c", "sorttype": "DESC" }],
+orderBy: [{ "fieldName": "CreatedOn", "sorttype": "DESC" }],
         pagingInfo: { "limit": 100, "offset": 0 }
       });
 
@@ -79,7 +77,7 @@ class DealService {
           "Values": [parseInt(stageId)],
           "Include": true
         }],
-        orderBy: [{ "fieldName": "created_date_c", "sorttype": "DESC" }],
+orderBy: [{ "fieldName": "CreatedOn", "sorttype": "DESC" }],
         pagingInfo: { "limit": 100, "offset": 0 }
       });
 
@@ -146,27 +144,21 @@ async create(dealData) {
     }
   }
 
-  async update(id, dealData) {
+async update(id, dealData) {
     try {
       const apperClient = getApperClient();
       if (!apperClient) {
         throw new Error("ApperClient not initialized");
       }
 
-      // Filter out read-only fields and empty values
+      // Filter out read-only fields and empty values - use correct field names from deal_c schema
       const updateableData = { Id: parseInt(id) };
-      if (dealData.name_c) updateableData.name_c = dealData.name_c;
-      if (dealData.value_c) updateableData.value_c = parseFloat(dealData.value_c);
-      if (dealData.stage_c) updateableData.stage_c = parseInt(dealData.stage_c);
-      if (dealData.probability_c) updateableData.probability_c = parseFloat(dealData.probability_c);
-      if (dealData.expected_close_date_c) updateableData.expected_close_date_c = dealData.expected_close_date_c;
-      if (dealData.company_c) updateableData.company_c = parseInt(dealData.company_c);
-      if (dealData.contact_c) updateableData.contact_c = parseInt(dealData.contact_c);
-      if (dealData.description_c) updateableData.description_c = dealData.description_c;
-      if (dealData.source_c) updateableData.source_c = dealData.source_c;
-      if (dealData.priority_c) updateableData.priority_c = dealData.priority_c;
-      if (dealData.status_c) updateableData.status_c = dealData.status_c;
-      if (dealData.tags_c) updateableData.tags_c = dealData.tags_c;
+      if (dealData.title_c && dealData.title_c.trim() !== '') updateableData.title_c = dealData.title_c;
+      if (dealData.value_c !== undefined && dealData.value_c !== null && dealData.value_c !== '') updateableData.value_c = parseFloat(dealData.value_c);
+      if (dealData.stage_c !== undefined && dealData.stage_c !== null && dealData.stage_c !== '') updateableData.stage_c = dealData.stage_c;
+      if (dealData.notes_c && dealData.notes_c.trim() !== '') updateableData.notes_c = dealData.notes_c;
+      if (dealData.contactId_c !== undefined && dealData.contactId_c !== null && dealData.contactId_c !== '') updateableData.contactId_c = parseInt(dealData.contactId_c);
+      if (dealData.Tags && dealData.Tags.trim() !== '') updateableData.Tags = dealData.Tags;
 
       const params = {
         records: [updateableData]
