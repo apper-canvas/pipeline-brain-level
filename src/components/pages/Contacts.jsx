@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { toast } from "react-hot-toast";
+import { toast } from "react-toastify";
 import { contactService } from "@/services/api/contactService";
 import { dealService } from "@/services/api/dealService";
 import { create as createCompany, getAll as getAllCompanies, update as updateCompany } from "@/services/api/companyService";
