@@ -22,6 +22,16 @@ const AddDealModal = ({ isOpen, onClose, preselectedContact, onSuccess }) => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
+  // Static stage options from deal_c schema picklist values
+  const stageOptions = [
+    { value: "lead", label: "Lead" },
+    { value: "qualified", label: "Qualified" },
+    { value: "proposal", label: "Proposal" },
+    { value: "negotiation", label: "Negotiation" },
+    { value: "won", label: "Won" },
+    { value: "lost", label: "Lost" }
+  ];
+
   useEffect(() => {
     if (isOpen) {
       loadData()
@@ -36,12 +46,8 @@ const AddDealModal = ({ isOpen, onClose, preselectedContact, onSuccess }) => {
 
   const loadData = async () => {
     try {
-      const [contactsData, stagesData] = await Promise.all([
-        contactService.getAll(),
-        stageService.getAll()
-      ])
+      const contactsData = await contactService.getAll();
       setContacts(contactsData)
-      setStages(stagesData)
     } catch (err) {
       toast.error("Failed to load form data")
     }
@@ -158,8 +164,7 @@ await dealService.create({
             required
             error={errors.value}
           />
-
-          <FormField
+<FormField
             label="Stage"
             type="select"
             value={formData.stage}
@@ -167,10 +172,7 @@ await dealService.create({
             placeholder="Select a stage"
             required
             error={errors.stage}
-options={stages.map(stage => ({
-              value: stage.name?.toLowerCase() || 'unknown',
-              label: stage.name || 'Unknown Stage'
-            }))}
+            options={stageOptions}
           />
 
           <FormField
