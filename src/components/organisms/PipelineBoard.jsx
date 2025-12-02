@@ -80,8 +80,10 @@ const PipelineBoard = ({ deals: propDeals, stages: propStages, onEditDeal, onVie
     }
   };
 
-  const getDealsForStage = (stageId) => {
-    return deals.filter(deal => deal.stage_c?.Id === stageId || deal.stage_c === stageId);
+const getDealsForStage = (stageId) => {
+    // Since stage_c is a Picklist field, compare string values directly
+    // stageId should be the stage name (e.g., "lead", "qualified", etc.)
+    return deals.filter(deal => deal.stage_c === stageId);
   };
 
   const getTotalValue = (stageId) => {
