@@ -1,11 +1,13 @@
-import { useState, useEffect } from 'react'
-import { dealService } from '@/services/api/dealService'
-import { contactService } from '@/services/api/contactService'
-import { stageService } from '@/services/api/stageService'
-import ApperIcon from '@/components/ApperIcon'
-import Button from '@/components/atoms/Button'
-import FormField from '@/components/molecules/FormField'
-import { toast } from 'react-toastify'
+import React, { useEffect, useState } from "react";
+import { dealService } from "@/services/api/dealService";
+import { contactService } from "@/services/api/contactService";
+import { stageService } from "@/services/api/stageService";
+import { toast } from "react-toastify";
+import { create as createCompany, getAll as getAllCompanies } from "@/services/api/companyService";
+import { create as createQuote, getAll as getAllQuotes } from "@/services/api/quoteService";
+import ApperIcon from "@/components/ApperIcon";
+import Button from "@/components/atoms/Button";
+import FormField from "@/components/molecules/FormField";
 
 const AddDealModal = ({ isOpen, onClose, preselectedContact, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -14,11 +16,11 @@ const AddDealModal = ({ isOpen, onClose, preselectedContact, onSuccess }) => {
     value: "",
     stage: "lead",
     notes: ""
-  })
-  const [contacts, setContacts] = useState([])
-  const [stages, setStages] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [errors, setErrors] = useState({})
+  });
+  const [contacts, setContacts] = useState([]);
+  const [stages, setStages] = useState([]);
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -60,7 +62,7 @@ const AddDealModal = ({ isOpen, onClose, preselectedContact, onSuccess }) => {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault()
     
     if (!validateForm()) return

@@ -1,122 +1,127 @@
-import { useState, useEffect } from 'react'
-import { companyService } from '@/services/api/companyService'
-import AddCompanyModal from '@/components/organisms/AddCompanyModal'
-import CompanyDetailModal from '@/components/organisms/CompanyDetailModal'
-import SearchBar from '@/components/molecules/SearchBar'
-import Button from '@/components/atoms/Button'
-import ApperIcon from '@/components/ApperIcon'
-import Loading from '@/components/ui/Loading'
-import ErrorView from '@/components/ui/ErrorView'
-import Empty from '@/components/ui/Empty'
-import { toast } from 'react-toastify'
+import React, { useEffect, useState, useMemo } from "react";
+import { companyService } from "@/services/api/companyService";
+import { quoteService } from "@/services/api/quoteService";
+import { toast } from 'react-hot-toast';
+import ApperIcon from "@/components/ApperIcon";
+import Loading from "@/components/ui/Loading";
+import ErrorView from "@/components/ui/ErrorView";
+import Empty from "@/components/ui/Empty";
+import Button from "@/components/atoms/Button";
+import CompanyDetailModal from "@/components/organisms/CompanyDetailModal";
+import AddCompanyModal from "@/components/organisms/AddCompanyModal";
+import SearchBar from "@/components/molecules/SearchBar";
 
 const Companies = () => {
-  const [companies, setCompanies] = useState([])
-  const [filteredCompanies, setFilteredCompanies] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [industryFilter, setIndustryFilter] = useState('all')
-  const [showAddModal, setShowAddModal] = useState(false)
-  const [showDetailModal, setShowDetailModal] = useState(false)
-  const [selectedCompany, setSelectedCompany] = useState(null)
-  const [editMode, setEditMode] = useState(false)
+  // State
+  const [companies, setCompanies] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [industryFilter, setIndustryFilter] = useState('all');
 
-  // Load companies
-  const loadData = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      const companiesData = await companyService.getAll()
-      setCompanies(companiesData)
-      setFilteredCompanies(companiesData)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
+  // Extract unique industries for filter dropdown
+  const industries = useMemo(() => {
+    const uniqueIndustries = [...new Set(companies.map(company => company.industry).filter(Boolean))];
+    return uniqueIndustries.sort();
+  }, [companies]);
+
+  // Filter companies based on search and industry
+  const filteredCompanies = useMemo(() => {
+    let filtered = companies;
+
+    // Filter by industry
+    if (industryFilter !== 'all') {
+      filtered = filtered.filter(company => company.industry === industryFilter);
     }
-  }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(company =>
+        (company.name && company.name.toLowerCase().includes(query)) ||
+        (company.industry && company.industry.toLowerCase().includes(query)) ||
+        (company.email && company.email.toLowerCase().includes(query)) ||
+        (company.phone && company.phone.toLowerCase().includes(query))
+      );
+    }
+
+    return filtered;
+  }, [companies, searchQuery, industryFilter]);
 
   // Initial load
   useEffect(() => {
-    loadData()
-  }, [])
+    loadCompanies();
+  }, []);
 
-  // Filter companies
-  useEffect(() => {
-    let filtered = [...companies]
-
-    // Search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase()
-      filtered = filtered.filter(company =>
-        company.name.toLowerCase().includes(query) ||
-        company.industry.toLowerCase().includes(query) ||
-        company.email.toLowerCase().includes(query) ||
-        company.phone.includes(query)
-      )
+  const loadCompanies = async () => {
+    setLoading(true);
+    try {
+      const data = await companyService.getAll();
+      setCompanies(data || []);
+      setError(null);
+    } catch (error) {
+      console.error('Error loading companies:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
-
-    // Industry filter
-    if (industryFilter !== 'all') {
-      filtered = filtered.filter(company => company.industry === industryFilter)
-    }
-
-    setFilteredCompanies(filtered)
-  }, [companies, searchQuery, industryFilter])
-
-  // Get unique industries
-  const industries = [...new Set(companies.map(company => company.industry))].filter(Boolean)
+  };
 
   // Handle search
   const handleSearch = (query) => {
-    setSearchQuery(query)
-  }
+    setSearchQuery(query);
+  };
 
   // Handle add company
   const handleAddCompany = () => {
-    setSelectedCompany(null)
-    setEditMode(false)
-    setShowAddModal(true)
-  }
-
-  // Handle edit company
-  const handleEditCompany = (company) => {
-    setSelectedCompany(company)
-    setEditMode(true)
-    setShowDetailModal(false)
-    setShowAddModal(true)
-  }
+    setSelectedCompany(null);
+    setEditMode(false);
+    setShowAddModal(true);
+  };
 
   // Handle view company
   const handleViewCompany = (company) => {
-    setSelectedCompany(company)
-    setShowDetailModal(true)
-  }
+    setSelectedCompany(company);
+    setShowDetailModal(true);
+  };
+
+  // Handle edit company
+  const handleEditCompany = (company) => {
+    setSelectedCompany(company);
+    setEditMode(true);
+    setShowDetailModal(false);
+    setShowAddModal(true);
+  };
 
   // Handle delete company
   const handleDeleteCompany = async (companyId) => {
     if (!window.confirm('Are you sure you want to delete this company?')) {
-      return
+      return;
     }
 
     try {
-      await companyService.delete(companyId)
-      await loadData()
-      toast.success('Company deleted successfully')
-      setShowDetailModal(false)
-    } catch (err) {
-      toast.error(`Failed to delete company: ${err.message}`)
+      await companyService.delete(companyId);
+      await loadCompanies();
+      setSelectedCompany(null);
+      setShowDetailModal(false);
+      toast.success('Company deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting company:', error);
+      toast.error('Failed to delete company');
     }
-  }
+  };
 
   // Handle success (create/update)
   const handleSuccess = async () => {
-    await loadData()
-    setShowAddModal(false)
-    setSelectedCompany(null)
-    setEditMode(false)
-  }
+    await loadCompanies();
+    setShowAddModal(false);
+    setSelectedCompany(null);
+    setEditMode(false);
+  };
 
   // Format currency
   const formatCurrency = (amount) => {
@@ -125,16 +130,16 @@ const Companies = () => {
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(amount)
-  }
+    }).format(amount);
+  };
 
   // Format employees count
   const formatEmployees = (count) => {
-    return new Intl.NumberFormat('en-US').format(count)
-  }
+    return new Intl.NumberFormat('en-US').format(count);
+  };
 
-  if (loading) return <Loading />
-  if (error) return <ErrorView message={error} onRetry={loadData} />
+  if (loading) return <Loading />;
+  if (error) return <ErrorView message={error} onRetry={loadCompanies} />;
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -280,7 +285,7 @@ const Companies = () => {
         />
       )}
     </div>
-  )
-}
+  );
+};
 
-export default Companies
+export default Companies;

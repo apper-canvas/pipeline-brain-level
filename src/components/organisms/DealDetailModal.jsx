@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react'
-import { noteService } from '@/services/api/noteService'
-import { contactService } from '@/services/api/contactService'
-import ApperIcon from '@/components/ApperIcon'
-import Button from '@/components/atoms/Button'
-import Badge from '@/components/atoms/Badge'
-import { formatDistanceToNow } from 'date-fns'
-import { toast } from 'react-toastify'
+import React, { useEffect, useState } from "react";
+import { noteService } from "@/services/api/noteService";
+import { contactService } from "@/services/api/contactService";
+import { formatDistanceToNow } from "date-fns";
+import { toast } from "react-toastify";
+import ApperIcon from "@/components/ApperIcon";
+import Loading from "@/components/ui/Loading";
+import Button from "@/components/atoms/Button";
+import Badge from "@/components/atoms/Badge";
 
 const DealDetailModal = ({ isOpen, onClose, deal }) => {
   const [notes, setNotes] = useState([])
@@ -14,50 +15,59 @@ const DealDetailModal = ({ isOpen, onClose, deal }) => {
   const [loading, setLoading] = useState(false)
   const [addingNote, setAddingNote] = useState(false)
 
-  useEffect(() => {
+useEffect(() => {
     if (isOpen && deal) {
-      loadDealData()
+      fetchData()
     }
   }, [isOpen, deal])
 
-  const loadDealData = async () => {
-    if (!deal) return
+  const fetchData = async () => {
+    if (!deal?.Id) return
     
+    setLoading(true)
     try {
-      setLoading(true)
-      const [notesData, contactData] = await Promise.all([
+      const [notesResponse, contactResponse] = await Promise.all([
         noteService.getByDealId(deal.Id),
-        contactService.getById(deal.contactId)
+        deal.contactId ? contactService.getById(deal.contactId) : Promise.resolve(null)
       ])
-      setNotes(notesData)
-      setContact(contactData)
-    } catch (err) {
-      toast.error("Failed to load deal details")
+      
+      setNotes(notesResponse?.data || [])
+      setContact(contactResponse?.data || null)
+    } catch (error) {
+      console.error('Failed to fetch data:', error)
+      toast.error('Failed to load deal details')
     } finally {
       setLoading(false)
     }
   }
 
   const handleAddNote = async () => {
-    if (!newNote.trim() || !deal) return
-
+    if (!newNote.trim() || !deal?.Id) return
+    
+    setAddingNote(true)
     try {
-      setAddingNote(true)
-      const note = await noteService.create({
+      const noteData = {
+        content: newNote.trim(),
         dealId: deal.Id,
-        content: newNote.trim()
-      })
-      setNotes(prev => [note, ...prev])
-      setNewNote("")
-      toast.success("Note added successfully!")
-    } catch (err) {
-      toast.error("Failed to add note")
+        createdAt: new Date().toISOString()
+      }
+      
+      const response = await noteService.create(noteData)
+      if (response?.data) {
+        setNotes(prev => [response.data, ...prev])
+        setNewNote('')
+        toast.success('Note added successfully')
+      }
+    } catch (error) {
+      console.error('Failed to add note:', error)
+      toast.error('Failed to add note')
     } finally {
       setAddingNote(false)
     }
   }
 
   const formatCurrency = (amount) => {
+    if (!amount) return '$0'
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',

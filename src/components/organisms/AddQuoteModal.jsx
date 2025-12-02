@@ -1,29 +1,35 @@
-import { useState, useEffect } from 'react'
-import { quoteService } from '@/services/api/quoteService'
-import { companyService } from '@/services/api/companyService'
-import Button from '@/components/atoms/Button'
-import Input from '@/components/atoms/Input'
-import Label from '@/components/atoms/Label'
-import FormField from '@/components/molecules/FormField'
-import ApperIcon from '@/components/ApperIcon'
-import { toast } from 'react-toastify'
+import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import { companyService } from "@/services/api/companyService";
+import { quoteService } from "@/services/api/quoteService";
+import ApperIcon from "@/components/ApperIcon";
+import Label from "@/components/atoms/Label";
+import Button from "@/components/atoms/Button";
+import Input from "@/components/atoms/Input";
+import FormField from "@/components/molecules/FormField";
 
 function AddQuoteModal({ isOpen, onClose, onSuccess, quote = null }) {
   const [formData, setFormData] = useState({
     customerId: '',
     customerName: '',
     status: 'Draft',
-    items: [{ id: 1, description: '', quantity: 1, unitPrice: 0, total: 0 }],
+    items: [{
+      id: 1,
+      description: '',
+      quantity: 1,
+      unitPrice: 0,
+      total: 0
+    }],
     subtotal: 0,
     taxRate: 0.08,
     taxAmount: 0,
     total: 0,
     validUntil: '',
     notes: ''
-  })
-  const [companies, setCompanies] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [loadingCompanies, setLoadingCompanies] = useState(false)
+  });
+  const [companies, setCompanies] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [loadingCompanies, setLoadingCompanies] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -143,9 +149,8 @@ function AddQuoteModal({ isOpen, onClose, onSuccess, quote = null }) {
     }
   }
 
-  async function handleSubmit(e) {
-    e.preventDefault()
-    
+async function onSubmit(e) {
+  e.preventDefault()
     if (!formData.customerId || !formData.customerName) {
       toast.error('Please select a customer')
       return

@@ -1,9 +1,11 @@
-import { useState } from 'react'
-import { contactService } from '@/services/api/contactService'
-import ApperIcon from '@/components/ApperIcon'
-import Button from '@/components/atoms/Button'
-import FormField from '@/components/molecules/FormField'
-import { toast } from 'react-toastify'
+import React, { useState } from "react";
+import { contactService } from "@/services/api/contactService";
+import { toast } from "react-toastify";
+import { create as createCompany } from "@/services/api/companyService";
+import { create as createQuote } from "@/services/api/quoteService";
+import ApperIcon from "@/components/ApperIcon";
+import Button from "@/components/atoms/Button";
+import FormField from "@/components/molecules/FormField";
 
 const AddContactModal = ({ isOpen, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -12,28 +14,26 @@ const AddContactModal = ({ isOpen, onClose, onSuccess }) => {
     email: "",
     phone: "",
     tags: []
-  })
-  const [loading, setLoading] = useState(false)
-  const [errors, setErrors] = useState({})
+  });
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const validateForm = () => {
-    const newErrors = {}
-
-    if (!formData.name.trim()) newErrors.name = "Name is required"
-    if (!formData.company.trim()) newErrors.company = "Company is required"
+    const newErrors = {};
+if (!formData.name.trim()) newErrors.name = "Name is required";
+    if (!formData.company.trim()) newErrors.company = "Company is required";
     if (!formData.email.trim()) {
-      newErrors.email = "Email is required"
+      newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email"
+      newErrors.email = "Please enter a valid email";
     }
-if (formData.phone && !/^\+?[\d\s\-()]+$/.test(formData.phone)) {
-      newErrors.phone = "Please enter a valid phone number"
+    if (formData.phone && !/^\+?[\d\s\-()]+$/.test(formData.phone)) {
+      newErrors.phone = "Please enter a valid phone number";
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
   const handleSubmit = async (e) => {
     e.preventDefault()
     

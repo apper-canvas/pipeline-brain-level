@@ -1,10 +1,10 @@
-import { useState } from 'react'
-import ApperIcon from '@/components/ApperIcon'
-import Badge from '@/components/atoms/Badge'
-import Button from '@/components/atoms/Button'
-import { formatDistanceToNow } from 'date-fns'
+import React, { useState } from "react";
+import { formatDistanceToNow } from "date-fns";
+import ApperIcon from "@/components/ApperIcon";
+import Button from "@/components/atoms/Button";
+import Badge from "@/components/atoms/Badge";
 
-const ContactTable = ({ contacts, deals, onEditContact, onViewContact, onAddDeal }) => {
+const ContactTable = ({ contacts = [], deals = [], onEditContact, onViewContact, onAddDeal }) => {
   const [sortField, setSortField] = useState("name")
   const [sortDirection, setSortDirection] = useState("asc")
 
@@ -18,44 +18,13 @@ const ContactTable = ({ contacts, deals, onEditContact, onViewContact, onAddDeal
   }
 
   const getContactDeals = (contactId) => {
-    return deals.filter(deal => deal.contactId === contactId)
+    return deals.filter(deal => deal.contactId === contactId) || []
   }
 
   const getContactValue = (contactId) => {
     const contactDeals = getContactDeals(contactId)
-    return contactDeals.reduce((total, deal) => total + deal.value, 0)
+    return contactDeals.reduce((sum, deal) => sum + (deal.value || 0), 0)
   }
-
-  const sortedContacts = [...contacts].sort((a, b) => {
-    let aValue = a[sortField]
-    let bValue = b[sortField]
-
-    if (sortField === "totalValue") {
-      aValue = getContactValue(a.Id)
-      bValue = getContactValue(b.Id)
-    }
-
-    if (sortField === "dealsCount") {
-      aValue = getContactDeals(a.Id).length
-      bValue = getContactDeals(b.Id).length
-    }
-
-    if (sortField === "createdAt") {
-      aValue = new Date(a.createdAt)
-      bValue = new Date(b.createdAt)
-    }
-
-    if (typeof aValue === "string") {
-      aValue = aValue.toLowerCase()
-      bValue = bValue.toLowerCase()
-    }
-
-    if (sortDirection === "asc") {
-      return aValue < bValue ? -1 : aValue > bValue ? 1 : 0
-    } else {
-      return aValue > bValue ? -1 : aValue < bValue ? 1 : 0
-    }
-  })
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
@@ -64,6 +33,42 @@ const ContactTable = ({ contacts, deals, onEditContact, onViewContact, onAddDeal
       minimumFractionDigits: 0
     }).format(amount)
   }
+
+  const sortedContacts = [...contacts].sort((a, b) => {
+    let aValue, bValue
+
+    switch (sortField) {
+      case "name":
+        aValue = (a.first_name_c || '') + ' ' + (a.last_name_c || '')
+        bValue = (b.first_name_c || '') + ' ' + (b.last_name_c || '')
+        break
+      case "company":
+        aValue = a.company_c?.Name || a.company_c || ''
+        bValue = b.company_c?.Name || b.company_c || ''
+        break
+      case "dealsCount":
+        aValue = getContactDeals(a.Id).length
+        bValue = getContactDeals(b.Id).length
+        break
+      case "totalValue":
+        aValue = getContactValue(a.Id)
+        bValue = getContactValue(b.Id)
+        break
+      case "createdAt":
+        aValue = new Date(a.date_entered || 0).getTime()
+        bValue = new Date(b.date_entered || 0).getTime()
+        break
+      default:
+        aValue = a[sortField] || ''
+        bValue = b[sortField] || ''
+    }
+
+    if (sortDirection === "asc") {
+      return aValue < bValue ? -1 : aValue > bValue ? 1 : 0
+    } else {
+      return aValue > bValue ? -1 : aValue < bValue ? 1 : 0
+    }
+  })
 
   const SortIcon = ({ field }) => {
     if (sortField !== field) return null
@@ -132,9 +137,10 @@ const ContactTable = ({ contacts, deals, onEditContact, onViewContact, onAddDeal
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {sortedContacts.map((contact) => {
+{sortedContacts.map((contact) => {
               const contactDeals = getContactDeals(contact.Id)
               const totalValue = getContactValue(contact.Id)
+              const fullName = (contact.first_name_c || '') + ' ' + (contact.last_name_c || '')
               
               return (
                 <tr key={contact.Id} className="hover:bg-gray-50 transition-colors duration-200">
@@ -142,18 +148,18 @@ const ContactTable = ({ contacts, deals, onEditContact, onViewContact, onAddDeal
                     <div className="flex items-center">
                       <div className="w-10 h-10 bg-gradient-to-br from-coral-100 to-red-100 rounded-full flex items-center justify-center">
                         <span className="text-coral-600 font-medium text-sm">
-                          {contact.name.charAt(0).toUpperCase()}
+                          {contact.first_name_c?.charAt(0)?.toUpperCase() || ''}{contact.last_name_c?.charAt(0)?.toUpperCase() || ''}
                         </span>
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-navy-500">{contact.name}</div>
-                        <div className="text-sm text-gray-500">{contact.email}</div>
+                        <div className="text-sm font-medium text-navy-500">{fullName}</div>
+                        <div className="text-sm text-gray-500">{contact.email_c}</div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-navy-500">{contact.company}</div>
-                    <div className="text-sm text-gray-500">{contact.phone}</div>
+<td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-navy-500">{contact.company_c?.Name || contact.company_c || ''}</div>
+                    <div className="text-sm text-gray-500">{contact.phone_c}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <Badge variant={contactDeals.length > 0 ? "primary" : "default"}>
@@ -166,7 +172,7 @@ const ContactTable = ({ contacts, deals, onEditContact, onViewContact, onAddDeal
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDistanceToNow(new Date(contact.createdAt), { addSuffix: true })}
+                    {contact.date_entered ? formatDistanceToNow(new Date(contact.date_entered), { addSuffix: true }) : 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-2">

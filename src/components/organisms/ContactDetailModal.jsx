@@ -16,60 +16,76 @@ const [deals, setDeals] = useState([])
   const [addingActivity, setAddingActivity] = useState(false)
 useEffect(() => {
     if (isOpen && contact) {
-      loadContactData()
+      fetchContactDeals();
+      fetchContactActivities();
     }
-  }, [isOpen, contact])
+  }, [isOpen, contact]);
 
-const loadContactData = async () => {
-    if (!contact) return
+  const fetchContactDeals = async () => {
+    if (!contact?.Id) return;
     
     try {
-      setLoading(true)
-      const [dealsData, activitiesData] = await Promise.all([
-        dealService.getByContactId(contact.Id),
-        activityService.getByContactId(contact.Id)
-      ])
-      setDeals(dealsData)
-      setActivities(activitiesData)
-    } catch (err) {
-      toast.error("Failed to load contact data")
+      setLoading(true);
+      const response = await dealService.getByContactId(contact.Id);
+      setDeals(response?.data || []);
+    } catch (error) {
+      console.error('Error fetching deals:', error);
+      toast.error('Failed to load deals');
+      setDeals([]);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
+
+  const fetchContactActivities = async () => {
+    if (!contact?.Id) return;
+    
+    try {
+      const response = await activityService.getByContactId(contact.Id);
+      setActivities(response?.data || []);
+    } catch (error) {
+      console.error('Error fetching activities:', error);
+      toast.error('Failed to load activities');
+      setActivities([]);
+    }
+  };
 
   const handleAddActivity = async () => {
-    if (!newActivity.title.trim() || !contact) return
+    if (!newActivity.title.trim() || !contact?.Id) return;
 
     try {
-      setAddingActivity(true)
-      const activity = await activityService.create({
+      setAddingActivity(true);
+      const activityData = {
+        ...newActivity,
         contactId: contact.Id,
-        type: newActivity.type,
-        title: newActivity.title.trim(),
-        description: newActivity.description.trim()
-      })
-      setActivities(prev => [activity, ...prev])
-      setNewActivity({ type: 'note', title: '', description: '' })
-      toast.success("Activity added successfully!")
-    } catch (err) {
-      toast.error("Failed to add activity")
+        createdAt: new Date().toISOString()
+      };
+      
+      const response = await activityService.create(activityData);
+      if (response?.data) {
+        setActivities(prev => [response.data, ...prev]);
+        setNewActivity({ type: 'note', title: '', description: '' });
+        toast.success('Activity added successfully');
+      }
+    } catch (error) {
+      console.error('Error adding activity:', error);
+      toast.error('Failed to add activity');
     } finally {
-      setAddingActivity(false)
+      setAddingActivity(false);
     }
-  }
+  };
 
   const getTotalValue = () => {
-    return deals.reduce((total, deal) => total + deal.value, 0)
-  }
+    return deals.reduce((total, deal) => total + (deal.value || 0), 0);
+  };
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0
-    }).format(amount)
-  }
+    }).format(amount || 0);
+  };
 
   const getStageColor = (stage) => {
     const colors = {
@@ -79,11 +95,11 @@ const loadContactData = async () => {
       negotiation: "warning",
       won: "success",
       lost: "danger"
-    }
-    return colors[stage.toLowerCase()] || "default"
-  }
+    };
+    return colors[stage?.toLowerCase()] || "default";
+  };
 
-  if (!isOpen || !contact) return null
+  if (!isOpen || !contact) return null;
 
   return (
     <div
@@ -97,12 +113,16 @@ const loadContactData = async () => {
                 <div
                     className="w-16 h-16 bg-gradient-to-br from-coral-100 to-red-100 rounded-full flex items-center justify-center">
                     <span className="text-coral-600 font-semibold text-xl">
-                        {contact.name.charAt(0).toUpperCase()}
+{(contact.first_name_c || contact.name || 'C').charAt(0).toUpperCase()}
                     </span>
                 </div>
                 <div>
-                    <h2 className="text-xl font-semibold text-navy-500">{contact.name}</h2>
-                    <p className="text-gray-600">{contact.company}</p>
+                    <h2 className="text-xl font-semibold text-navy-500">
+                      {contact.first_name_c && contact.last_name_c 
+                        ? `${contact.first_name_c} ${contact.last_name_c}`
+                        : contact.name || 'Contact'}
+                    </h2>
+                    <p className="text-gray-600">{contact.company_c?.Name || contact.company_c || contact.company || 'Unknown Company'}</p>
                 </div>
             </div>
             <button
@@ -144,23 +164,26 @@ const loadContactData = async () => {
                 {/* Contact Information */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <h3 className="text-sm font-medium text-gray-500 mb-2">Email</h3>
-                        <p className="text-sm text-gray-700">{contact.email}</p>
+<h3 className="text-sm font-medium text-gray-500 mb-2">Email</h3>
+                        <p className="text-sm text-gray-700">{contact.email_c || contact.email || "Not provided"}</p>
                     </div>
                     <div>
                         <h3 className="text-sm font-medium text-gray-500 mb-2">Phone</h3>
-                        <p className="text-sm text-gray-700">{contact.phone || "Not provided"}</p>
+                        <p className="text-sm text-gray-700">{contact.phone_c || contact.phone || "Not provided"}</p>
                     </div>
                     <div>
-                        <h3 className="text-sm font-medium text-gray-500 mb-2">Company</h3>
-                        <p className="text-sm text-gray-700">{contact.company}</p>
+<h3 className="text-sm font-medium text-gray-500 mb-2">Company</h3>
+                        <p className="text-sm text-gray-700">{contact.company_c?.Name || contact.company_c || contact.company || "Not provided"}</p>
                     </div>
                     <div>
                         <h3 className="text-sm font-medium text-gray-500 mb-2">Added</h3>
                         <p className="text-sm text-gray-700">
-                            {formatDistanceToNow(new Date(contact.createdAt), {
-                                addSuffix: true
-                            })}
+                            {contact.date_entered || contact.createdAt 
+                              ? formatDistanceToNow(new Date(contact.date_entered || contact.createdAt), {
+                                  addSuffix: true
+                                })
+                              : "Unknown"
+                            }
                         </p>
                     </div>
                 </div>
@@ -211,22 +234,24 @@ const loadContactData = async () => {
                         key={deal.Id}
                         className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
                         <div className="flex justify-between items-start mb-3">
-                            <div className="flex-1">
-                                <h4 className="font-medium text-navy-500">{deal.title}</h4>
-                                <p className="text-sm text-gray-600 mt-1">{deal.notes}</p>
+<div className="flex-1">
+                                <h4 className="font-medium text-navy-500">{deal.name || deal.title || 'Untitled Deal'}</h4>
+                                <p className="text-sm text-gray-600 mt-1">{deal.description || deal.notes || 'No description'}</p>
                             </div>
-                            <Badge variant={getStageColor(deal.stage)} className="ml-4">
-                                {deal.stage.charAt(0).toUpperCase() + deal.stage.slice(1)}
+                            <Badge variant={getStageColor(deal.sales_stage || deal.stage)} className="ml-4">
+                                {(deal.sales_stage || deal.stage || 'unknown').charAt(0).toUpperCase() + (deal.sales_stage || deal.stage || 'unknown').slice(1)}
                             </Badge>
                         </div>
                         <div className="flex justify-between items-center text-sm text-gray-500">
-                            <span className="font-medium text-navy-500">
-                                {formatCurrency(deal.value)}
+<span className="font-medium text-navy-500">
+                                {formatCurrency(deal.amount || deal.value)}
                             </span>
-                            <span>Updated {formatDistanceToNow(new Date(deal.lastContact), {
+                            <span>Updated {deal.date_modified || deal.lastContact 
+                                ? formatDistanceToNow(new Date(deal.date_modified || deal.lastContact), {
                                     addSuffix: true
-                                })}
-                            </span>
+                                })
+                                : 'Unknown'
+                            }</span>
                         </div>
                     </div>)}
                 </div>}

@@ -1,14 +1,13 @@
-import { useState, useEffect } from 'react'
-import { companyService } from '@/services/api/companyService'
-import Button from '@/components/atoms/Button'
-import Input from '@/components/atoms/Input'
-import Label from '@/components/atoms/Label'
-import FormField from '@/components/molecules/FormField'
-import ApperIcon from '@/components/ApperIcon'
-import { toast } from 'react-toastify'
+import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import { companyService } from "@/services/api/companyService";
+import ApperIcon from "@/components/ApperIcon";
+import Label from "@/components/atoms/Label";
+import Button from "@/components/atoms/Button";
+import Input from "@/components/atoms/Input";
+import FormField from "@/components/molecules/FormField";
 
-const AddCompanyModal = ({ isOpen, onClose, onSuccess, company = null, editMode = false }) => {
-  const [loading, setLoading] = useState(false)
+const AddCompanyModal = ({ isOpen, onClose, onSuccess, editMode = false, company = null }) => {
   const [formData, setFormData] = useState({
     name: '',
     industry: '',
@@ -19,8 +18,8 @@ const AddCompanyModal = ({ isOpen, onClose, onSuccess, company = null, editMode 
     employees: '',
     revenue: '',
     notes: ''
-  })
-
+  });
+  const [loading, setLoading] = useState(false);
   // Populate form with company data when editing
   useEffect(() => {
     if (editMode && company) {

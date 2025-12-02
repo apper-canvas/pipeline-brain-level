@@ -1,77 +1,244 @@
-import dealsData from '@/services/mockData/deals.json'
+import { getApperClient } from '@/services/apperClient';
 
-let deals = [...dealsData]
+const DEAL_FIELDS = [
+  { "field": { "Name": "name_c" } },
+  { "field": { "Name": "value_c" } },
+  { "field": { "Name": "stage_c" }, "referenceField": { "field": { "Name": "name_c" } } },
+  { "field": { "Name": "probability_c" } },
+  { "field": { "Name": "expected_close_date_c" } },
+  { "field": { "Name": "company_c" }, "referenceField": { "field": { "Name": "name_c" } } },
+  { "field": { "Name": "contact_c" }, "referenceField": { "field": { "Name": "first_name_c" } } },
+  { "field": { "Name": "description_c" } },
+  { "field": { "Name": "source_c" } },
+  { "field": { "Name": "priority_c" } },
+  { "field": { "Name": "status_c" } },
+  { "field": { "Name": "tags_c" } },
+  { "field": { "Name": "created_date_c" } },
+  { "field": { "Name": "modified_date_c" } }
+];
 
-const delay = () => new Promise(resolve => setTimeout(resolve, Math.random() * 300 + 200))
-
-export const dealService = {
+class DealService {
   async getAll() {
-    await delay()
-    return [...deals]
-  },
+    try {
+      const apperClient = getApperClient();
+      if (!apperClient) {
+        throw new Error("ApperClient not initialized");
+      }
+
+      const response = await apperClient.fetchRecords('deal_c', {
+        fields: DEAL_FIELDS,
+        orderBy: [{ "fieldName": "created_date_c", "sorttype": "DESC" }],
+        pagingInfo: { "limit": 100, "offset": 0 }
+      });
+
+      if (!response.success) {
+        throw new Error(response.message);
+      }
+
+      return response.data || [];
+    } catch (error) {
+      console.error("Error fetching deals:", error?.response?.data?.message || error);
+      throw error;
+    }
+  }
 
   async getById(id) {
-    await delay()
-    return deals.find(deal => deal.Id === parseInt(id))
-  },
+    try {
+      const apperClient = getApperClient();
+      if (!apperClient) {
+        throw new Error("ApperClient not initialized");
+      }
 
-  async getByContactId(contactId) {
-    await delay()
-    return deals.filter(deal => deal.contactId === parseInt(contactId))
-  },
+      const response = await apperClient.getRecordById('deal_c', parseInt(id), {
+        fields: DEAL_FIELDS
+      });
 
-  async getByStage(stage) {
-    await delay()
-    return deals.filter(deal => deal.stage === stage)
-  },
+      if (!response.success) {
+        throw new Error(response.message);
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching deal ${id}:`, error?.response?.data?.message || error);
+      throw error;
+    }
+  }
+
+  async getByStage(stageId) {
+    try {
+      const apperClient = getApperClient();
+      if (!apperClient) {
+        throw new Error("ApperClient not initialized");
+      }
+
+      const response = await apperClient.fetchRecords('deal_c', {
+        fields: DEAL_FIELDS,
+        where: [{
+          "FieldName": "stage_c",
+          "Operator": "EqualTo",
+          "Values": [parseInt(stageId)],
+          "Include": true
+        }],
+        orderBy: [{ "fieldName": "created_date_c", "sorttype": "DESC" }],
+        pagingInfo: { "limit": 100, "offset": 0 }
+      });
+
+      if (!response.success) {
+        throw new Error(response.message);
+      }
+
+      return response.data || [];
+    } catch (error) {
+      console.error(`Error fetching deals for stage ${stageId}:`, error?.response?.data?.message || error);
+      throw error;
+    }
+  }
 
   async create(dealData) {
-    await delay()
-    const newDeal = {
-      Id: Math.max(...deals.map(d => d.Id)) + 1,
-      ...dealData,
-      createdAt: new Date().toISOString(),
-      lastContact: new Date().toISOString()
+    try {
+      const apperClient = getApperClient();
+      if (!apperClient) {
+        throw new Error("ApperClient not initialized");
+      }
+
+      // Filter out read-only fields and empty values
+      const updateableData = {};
+      if (dealData.name_c) updateableData.name_c = dealData.name_c;
+      if (dealData.value_c) updateableData.value_c = parseFloat(dealData.value_c);
+      if (dealData.stage_c) updateableData.stage_c = parseInt(dealData.stage_c);
+      if (dealData.probability_c) updateableData.probability_c = parseFloat(dealData.probability_c);
+      if (dealData.expected_close_date_c) updateableData.expected_close_date_c = dealData.expected_close_date_c;
+      if (dealData.company_c) updateableData.company_c = parseInt(dealData.company_c);
+      if (dealData.contact_c) updateableData.contact_c = parseInt(dealData.contact_c);
+      if (dealData.description_c) updateableData.description_c = dealData.description_c;
+      if (dealData.source_c) updateableData.source_c = dealData.source_c;
+      if (dealData.priority_c) updateableData.priority_c = dealData.priority_c;
+      if (dealData.status_c) updateableData.status_c = dealData.status_c;
+      if (dealData.tags_c) updateableData.tags_c = dealData.tags_c;
+
+      const params = {
+        records: [updateableData]
+      };
+
+      const response = await apperClient.createRecord('deal_c', params);
+
+      if (!response.success) {
+        throw new Error(response.message);
+      }
+
+      if (response.results) {
+        const successful = response.results.filter(r => r.success);
+        const failed = response.results.filter(r => !r.success);
+        
+        if (failed.length > 0) {
+          console.error(`Failed to create ${failed.length} deals:`, failed);
+          failed.forEach(record => {
+            if (record.message) throw new Error(record.message);
+            record.errors?.forEach(error => {
+              throw new Error(`${error.fieldLabel}: ${error.message}`);
+            });
+          });
+        }
+        return successful[0]?.data;
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error("Error creating deal:", error?.response?.data?.message || error);
+      throw error;
     }
-    deals.push(newDeal)
-    return { ...newDeal }
-  },
+  }
 
   async update(id, dealData) {
-    await delay()
-    const index = deals.findIndex(deal => deal.Id === parseInt(id))
-    if (index !== -1) {
-      deals[index] = { 
-        ...deals[index], 
-        ...dealData,
-        lastContact: new Date().toISOString()
+    try {
+      const apperClient = getApperClient();
+      if (!apperClient) {
+        throw new Error("ApperClient not initialized");
       }
-      return { ...deals[index] }
+
+      // Filter out read-only fields and empty values
+      const updateableData = { Id: parseInt(id) };
+      if (dealData.name_c) updateableData.name_c = dealData.name_c;
+      if (dealData.value_c) updateableData.value_c = parseFloat(dealData.value_c);
+      if (dealData.stage_c) updateableData.stage_c = parseInt(dealData.stage_c);
+      if (dealData.probability_c) updateableData.probability_c = parseFloat(dealData.probability_c);
+      if (dealData.expected_close_date_c) updateableData.expected_close_date_c = dealData.expected_close_date_c;
+      if (dealData.company_c) updateableData.company_c = parseInt(dealData.company_c);
+      if (dealData.contact_c) updateableData.contact_c = parseInt(dealData.contact_c);
+      if (dealData.description_c) updateableData.description_c = dealData.description_c;
+      if (dealData.source_c) updateableData.source_c = dealData.source_c;
+      if (dealData.priority_c) updateableData.priority_c = dealData.priority_c;
+      if (dealData.status_c) updateableData.status_c = dealData.status_c;
+      if (dealData.tags_c) updateableData.tags_c = dealData.tags_c;
+
+      const params = {
+        records: [updateableData]
+      };
+
+      const response = await apperClient.updateRecord('deal_c', params);
+
+      if (!response.success) {
+        throw new Error(response.message);
+      }
+
+      if (response.results) {
+        const successful = response.results.filter(r => r.success);
+        const failed = response.results.filter(r => !r.success);
+        
+        if (failed.length > 0) {
+          console.error(`Failed to update ${failed.length} deals:`, failed);
+          failed.forEach(record => {
+            if (record.message) throw new Error(record.message);
+            record.errors?.forEach(error => {
+              throw new Error(`${error.fieldLabel}: ${error.message}`);
+            });
+          });
+        }
+        return successful[0]?.data;
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error(`Error updating deal ${id}:`, error?.response?.data?.message || error);
+      throw error;
     }
-    return null
-  },
+  }
 
   async delete(id) {
-    await delay()
-    const index = deals.findIndex(deal => deal.Id === parseInt(id))
-    if (index !== -1) {
-      const deleted = deals.splice(index, 1)[0]
-      return deleted
-    }
-    return null
-  },
-
-  async updateStage(id, stage) {
-    await delay()
-    const index = deals.findIndex(deal => deal.Id === parseInt(id))
-    if (index !== -1) {
-      deals[index] = { 
-        ...deals[index], 
-        stage,
-        lastContact: new Date().toISOString()
+    try {
+      const apperClient = getApperClient();
+      if (!apperClient) {
+        throw new Error("ApperClient not initialized");
       }
-      return { ...deals[index] }
+
+      const params = { 
+        RecordIds: [parseInt(id)]
+      };
+
+      const response = await apperClient.deleteRecord('deal_c', params);
+
+      if (!response.success) {
+        throw new Error(response.message);
+      }
+
+      if (response.results) {
+        const failed = response.results.filter(r => !r.success);
+        
+        if (failed.length > 0) {
+          console.error(`Failed to delete ${failed.length} deals:`, failed);
+          failed.forEach(record => {
+            if (record.message) throw new Error(record.message);
+          });
+        }
+        return true;
+      }
+
+      return true;
+    } catch (error) {
+      console.error(`Error deleting deal ${id}:`, error?.response?.data?.message || error);
+      throw error;
     }
-    return null
   }
 }
+
+export const dealService = new DealService();

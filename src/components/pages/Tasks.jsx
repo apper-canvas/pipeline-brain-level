@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { taskService } from "@/services/api/taskService";
 import { toast } from "react-toastify";
-import { getAll } from "@/services/api/companyService";
+import * as companyService from "@/services/api/companyService";
+import * as quoteService from "@/services/api/quoteService";
 import ApperIcon from "@/components/ApperIcon";
 import Loading from "@/components/ui/Loading";
 import ErrorView from "@/components/ui/ErrorView";
@@ -13,63 +14,79 @@ import AddTaskModal from "@/components/organisms/AddTaskModal";
 import TaskDetailModal from "@/components/organisms/TaskDetailModal";
 import SearchBar from "@/components/molecules/SearchBar";
 
-
-export default function Tasks() {
+const Tasks = () => {
   const [tasks, setTasks] = useState([]);
-  const [filteredTasks, setFilteredTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
+  const [selectedTask, setSelectedTask] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [selectedTask, setSelectedTask] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [filteredTasks, setFilteredTasks] = useState([]);
 
   useEffect(() => {
-    loadData();
+    loadTasks();
   }, []);
 
   useEffect(() => {
     filterTasks();
   }, [tasks, searchQuery, statusFilter, priorityFilter]);
 
-  async function loadData() {
+  const loadTasks = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      setError(null);
       const data = await taskService.getAll();
       setTasks(data);
-    } catch (err) {
-      setError(err.message);
-      toast.error('Failed to load tasks');
+      setError(null);
+    } catch (error) {
+      console.error('Error loading tasks:', error);
+      setError(error.message);
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  function filterTasks() {
+const handleSuccess = async () => {
+    await loadTasks();
+    setShowAddModal(false);
+    setSelectedTask(null);
+    setIsEditing(false);
+  };
+
+  const handleUpdateTask = async (taskId, taskData) => {
+    try {
+      await taskService.update(taskId, taskData);
+      await loadTasks();
+      setSelectedTask(null);
+      toast.success('Task updated successfully!');
+    } catch (error) {
+      console.error('Error updating task:', error);
+      toast.error('Failed to update task');
+    }
+  };
+const filterTasks = () => {
     let filtered = [...tasks];
-
+    
     if (searchQuery) {
-      filtered = filtered.filter(task =>
-        task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        task.description.toLowerCase().includes(searchQuery.toLowerCase())
+      filtered = filtered.filter(task => 
+        task.title_c?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        task.description?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
-
+    
     if (statusFilter !== 'all') {
-      filtered = filtered.filter(task => task.status === statusFilter);
+      filtered = filtered.filter(task => task.status_c === statusFilter);
     }
-
+    
     if (priorityFilter !== 'all') {
-      filtered = filtered.filter(task => task.priority === priorityFilter);
+      filtered = filtered.filter(task => task.priority_c === priorityFilter);
     }
-
+    
     setFilteredTasks(filtered);
-  }
-
+  };
   function handleSearch(query) {
     setSearchQuery(query);
   }
@@ -91,52 +108,78 @@ export default function Tasks() {
     setShowDetailModal(true);
   }
 
-  async function handleDeleteTask(taskId) {
+const handleDeleteTaskAsync = async (taskId) => {
     if (!confirm('Are you sure you want to delete this task?')) {
       return;
     }
-
+    
     try {
       await taskService.delete(taskId);
-      setTasks(prev => prev.filter(task => task.Id !== taskId));
+      await loadTasks();
+      setSelectedTask(null);
       setShowDetailModal(false);
-      toast.success('Task deleted successfully');
-    } catch (err) {
+      toast.success('Task deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting task:', error);
       toast.error('Failed to delete task');
     }
-  }
+  };
 
-  async function handleSuccess() {
-    await loadData();
-    setShowAddModal(false);
-    setShowDetailModal(false);
-    toast.success(isEditing ? 'Task updated successfully' : 'Task created successfully');
-  }
-
-  function getPriorityBadgeVariant(priority) {
-    switch (priority) {
-      case 'High': return 'destructive';
-      case 'Medium': return 'secondary';
-      case 'Low': return 'outline';
-      default: return 'outline';
-    }
-  }
-
-  function getStatusBadgeVariant(status) {
+  const getStatusBadgeVariant = (status) => {
     switch (status) {
-      case 'Completed': return 'default';
-      case 'In Progress': return 'secondary';
-      case 'To Do': return 'outline';
-      default: return 'outline';
+      case 'Completed': return 'success';
+      case 'In Progress': return 'info';
+      default: return 'secondary';
     }
-  }
+  };
 
-  function isTaskOverdue(task) {
-    if (!task.dueDate || task.status === 'Completed') return false;
+  const getPriorityBadgeVariant = (priority) => {
+    switch (priority) {
+      case 'High': return 'danger';
+      case 'Medium': return 'warning';
+      default: return 'success';
+    }
+  };
+                <tr key={task.Id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">{task.title_c}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <Badge 
+                      className={
+                        task.priority_c === 'High' ? 'bg-red-100 text-red-800' :
+                        task.priority_c === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-green-100 text-green-800'
+                      }
+                    >
+                      {task.priority_c}
+                    </Badge>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+<Badge 
+                      className={
+                        task.status_c === 'Completed' ? 'bg-green-100 text-green-800' :
+                        task.status_c === 'In Progress' ? 'bg-blue-100 text-blue-800' :
+                        'bg-gray-100 text-gray-800'
+                      }
+                    >
+                      {task.status_c}
+                    </Badge>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+<div className="text-sm text-gray-900">
+                      {task.due_date_c ? new Date(task.due_date_c).toLocaleDateString() : 'No due date'}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">{task.assigned_to_c}</div>
+                  </td>
+
+const isTaskOverdue = (task) => {
+    if (!task.due_date_c || task.status_c === 'Completed') return false;
     const today = new Date().toISOString().split('T')[0];
-    return task.dueDate < today;
-  }
-
+    return task.due_date_c < today;
+  };
   function formatDate(dateString) {
     if (!dateString) return 'No due date';
     const date = new Date(dateString);
@@ -150,11 +193,9 @@ export default function Tasks() {
   if (loading) {
     return <Loading />;
   }
-
-  if (error) {
-    return <ErrorView message={error} onRetry={loadData} />;
+if (error) {
+    return <ErrorView message={error} onRetry={loadTasks} />;
   }
-
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
@@ -234,24 +275,24 @@ export default function Tasks() {
                   onClick={() => handleViewTask(task)}
                 >
                   <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1 min-w-0">
+<div className="flex-1 min-w-0">
                       <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                        {task.title}
+                        {task.title_c}
                         {isTaskOverdue(task) && (
                           <span className="ml-2 text-red-600 text-sm font-normal">(Overdue)</span>
                         )}
                       </h3>
                       <p className="text-gray-600 text-sm line-clamp-2">
-                        {task.description}
+                        {task.description || 'No description'}
                       </p>
                     </div>
                     
-                    <div className="flex items-center gap-2 ml-4">
-                      <Badge variant={getStatusBadgeVariant(task.status)}>
-                        {task.status}
+<div className="flex items-center gap-2 ml-4">
+                      <Badge variant={getStatusBadgeVariant(task.status_c)}>
+                        {task.status_c}
                       </Badge>
-                      <Badge variant={getPriorityBadgeVariant(task.priority)}>
-                        {task.priority}
+                      <Badge variant={getPriorityBadgeVariant(task.priority_c)}>
+                        {task.priority_c}
                       </Badge>
                     </div>
                   </div>
@@ -261,14 +302,13 @@ export default function Tasks() {
                       <div className="flex items-center gap-1">
                         <ApperIcon name="Calendar" className="w-4 h-4" />
                         <span className={isTaskOverdue(task) ? 'text-red-600' : ''}>
-                          {formatDate(task.dueDate)}
+                          {formatDate(task.due_date_c)}
                         </span>
                       </div>
-                      
-                      {task.assignee && (
+{task.assigned_to_c && (
                         <div className="flex items-center gap-1">
                           <ApperIcon name="User" className="w-4 h-4" />
-                          <span>{task.assignee}</span>
+                          <span>{task.assigned_to_c}</span>
                         </div>
                       )}
                     </div>
@@ -308,10 +348,13 @@ export default function Tasks() {
           onEdit={() => {
             setShowDetailModal(false);
             handleEditTask(selectedTask);
-          }}
-          onDelete={() => handleDeleteTask(selectedTask.Id)}
+onDelete={() => handleDeleteTaskAsync(selectedTask.Id)}
         />
       )}
     </div>
+  );
+};
+
+export default Tasks;
   );
 }

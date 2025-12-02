@@ -1,28 +1,36 @@
-import { useState } from 'react'
-import ApperIcon from '@/components/ApperIcon'
-import Badge from '@/components/atoms/Badge'
-import { formatDistanceToNow } from 'date-fns'
+import React, { useState } from "react";
+import { formatDistanceToNow } from "date-fns";
+import ApperIcon from "@/components/ApperIcon";
+import Badge from "@/components/atoms/Badge";
 
-const DealCard = ({ deal, contact, onEdit, onView }) => {
-  const [isDragging, setIsDragging] = useState(false)
+function DealCard({ 
+  deal, 
+  onView = () => {}, 
+  onEdit = () => {}, 
+  onDragStart = () => {}, 
+  onDragEnd = () => {},
+  contact 
+}) {
+  const [isDragging, setIsDragging] = useState(false);
 
   const handleDragStart = (e) => {
-    e.dataTransfer.setData("text/plain", deal.Id.toString())
-    setIsDragging(true)
-  }
+    setIsDragging(true);
+    onDragStart(e);
+  };
 
-  const handleDragEnd = () => {
-    setIsDragging(false)
-  }
+  const handleDragEnd = (e) => {
+    setIsDragging(false);
+    onDragEnd(e);
+  };
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
-      minimumFractionDigits: 0
-    }).format(amount)
-  }
-
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
   const getDaysInStage = () => {
     const daysSinceLastContact = Math.floor(
       (new Date() - new Date(deal.lastContact)) / (1000 * 60 * 60 * 24)

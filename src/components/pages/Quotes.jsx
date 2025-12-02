@@ -1,133 +1,116 @@
-import { useState, useEffect } from 'react'
-import { quoteService } from '@/services/api/quoteService'
-import AddQuoteModal from '@/components/organisms/AddQuoteModal'
-import QuoteDetailModal from '@/components/organisms/QuoteDetailModal'
-import SearchBar from '@/components/molecules/SearchBar'
-import Button from '@/components/atoms/Button'
-import Badge from '@/components/atoms/Badge'
-import ApperIcon from '@/components/ApperIcon'
-import Loading from '@/components/ui/Loading'
-import ErrorView from '@/components/ui/ErrorView'
-import Empty from '@/components/ui/Empty'
-import { toast } from 'react-toastify'
-import { formatDistanceToNow } from 'date-fns'
+import React, { useEffect, useState } from "react";
+import { create as createCompany, getAll as getAllCompanies, update as updateCompany } from "@/services/api/companyService";
+import { quoteService } from "@/services/api/quoteService";
+import { formatDistanceToNow } from "date-fns";
+import { toast } from "react-hot-toast";
+import ApperIcon from "@/components/ApperIcon";
+import Loading from "@/components/ui/Loading";
+import ErrorView from "@/components/ui/ErrorView";
+import Empty from "@/components/ui/Empty";
+import Button from "@/components/atoms/Button";
+import Badge from "@/components/atoms/Badge";
+import AddQuoteModal from "@/components/organisms/AddQuoteModal";
+import QuoteDetailModal from "@/components/organisms/QuoteDetailModal";
+import SearchBar from "@/components/molecules/SearchBar";
 
 function Quotes() {
-  const [quotes, setQuotes] = useState([])
-  const [filteredQuotes, setFilteredQuotes] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState('All')
-  const [showAddModal, setShowAddModal] = useState(false)
-  const [showDetailModal, setShowDetailModal] = useState(false)
-  const [selectedQuote, setSelectedQuote] = useState(null)
-  const [editingQuote, setEditingQuote] = useState(null)
+  const [quotes, setQuotes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedQuote, setSelectedQuote] = useState(null);
+  const [editingQuote, setEditingQuote] = useState(null);
 
-  async function loadData() {
+  useEffect(() => {
+    loadQuotes();
+  }, []);
+
+  const loadQuotes = async () => {
+    setLoading(true);
     try {
-      setLoading(true)
-      setError(null)
-      const data = await quoteService.getAll()
-      setQuotes(data)
-      setFilteredQuotes(data)
-    } catch (err) {
-      setError('Failed to load quotes')
+      const data = await quoteService.getAll();
+      setQuotes(data || []);
+      setError(null);
+    } catch (error) {
+      console.error('Error loading quotes:', error);
+      setError(error.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  useEffect(() => {
-    let filtered = quotes
-
-    if (searchQuery) {
-      filtered = filtered.filter(quote => 
-        quote.quoteNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        quote.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        quote.notes.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    }
-
-    if (statusFilter !== 'All') {
-      filtered = filtered.filter(quote => quote.status === statusFilter)
-    }
-
-    setFilteredQuotes(filtered)
-  }, [quotes, searchQuery, statusFilter])
-
-  function handleSearch(query) {
-    setSearchQuery(query)
-  }
-
-  function handleAddQuote() {
-    setEditingQuote(null)
-    setShowAddModal(true)
-  }
-
-  function handleEditQuote(quote) {
-    setEditingQuote(quote)
-    setShowAddModal(true)
-  }
-
-  function handleViewQuote(quote) {
-    setSelectedQuote(quote)
-    setShowDetailModal(true)
-  }
-
-  async function handleDeleteQuote(quoteId) {
-    if (window.confirm('Are you sure you want to delete this quote?')) {
-      try {
-        await quoteService.delete(quoteId)
-        setQuotes(prev => prev.filter(q => q.Id !== quoteId))
-        toast.success('Quote deleted successfully')
-      } catch (err) {
-        toast.error('Failed to delete quote')
-      }
-    }
-  }
-
-  async function handleSuccess() {
-    await loadData()
-    setShowAddModal(false)
-    setEditingQuote(null)
-  }
-
-  function formatCurrency(amount) {
+  const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD'
-    }).format(amount)
-  }
+    }).format(amount || 0);
+  };
 
-  function getStatusBadgeVariant(status) {
+  const getStatusColor = (status) => {
     const variants = {
-      'Draft': 'secondary',
-      'Pending': 'warning',
-      'Approved': 'success',
-      'Rejected': 'destructive',
-      'Expired': 'secondary'
-    }
-    return variants[status] || 'secondary'
-  }
+      'Draft': 'bg-gray-100 text-gray-800',
+      'Pending': 'bg-yellow-100 text-yellow-800',
+      'Approved': 'bg-green-100 text-green-800',
+      'Rejected': 'bg-red-100 text-red-800',
+      'Expired': 'bg-orange-100 text-orange-800'
+    };
+    return variants[status] || 'bg-gray-100 text-gray-800';
+  };
 
-  function getStatusColor(status) {
-    const colors = {
-      'Draft': 'text-gray-600 bg-gray-100',
-      'Pending': 'text-yellow-700 bg-yellow-100',
-      'Approved': 'text-green-700 bg-green-100',
-      'Rejected': 'text-red-700 bg-red-100',
-      'Expired': 'text-gray-600 bg-gray-100'
-    }
-    return colors[status] || 'text-gray-600 bg-gray-100'
-  }
+  const filteredQuotes = quotes.filter((quote) => {
+    const matchesSearch = !searchQuery || 
+      quote.quoteNumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      quote.customerName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      quote.notes?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'All' || quote.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
 
-  if (loading) return <Loading />
-  if (error) return <ErrorView message={error} onRetry={loadData} />
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+  };
+
+  const handleAddQuote = () => {
+    setEditingQuote(null);
+    setShowAddModal(true);
+  };
+
+  const handleEditQuote = (quote) => {
+    setEditingQuote(quote);
+    setShowAddModal(true);
+  };
+
+  const handleViewQuote = (quote) => {
+    setSelectedQuote(quote);
+    setShowDetailModal(true);
+  };
+
+  const handleDeleteQuote = async (quoteId) => {
+    if (window.confirm('Are you sure you want to delete this quote?')) {
+      try {
+        await quoteService.delete(quoteId);
+        setQuotes(prev => prev.filter(q => q.Id !== quoteId));
+        toast.success('Quote deleted successfully');
+      } catch (err) {
+        console.error('Error deleting quote:', err);
+        toast.error('Failed to delete quote');
+      }
+    }
+  };
+
+  const handleSuccess = async () => {
+    await loadQuotes();
+    setShowAddModal(false);
+    setEditingQuote(null);
+  };
+
+  if (loading) return <Loading />;
+  if (error) return <ErrorView message={error} onRetry={loadQuotes} />;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -216,7 +199,7 @@ function Quotes() {
             <div>
               <p className="text-sm font-medium text-gray-600">Total Value</p>
               <p className="text-2xl font-bold text-navy-500">
-                {formatCurrency(quotes.reduce((sum, q) => sum + q.total, 0))}
+                {formatCurrency(quotes.reduce((sum, q) => sum + (q.total || 0), 0))}
               </p>
             </div>
             <div className="w-12 h-12 bg-coral-100 rounded-lg flex items-center justify-center">
@@ -284,12 +267,12 @@ function Quotes() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-500">
-                        {new Date(quote.validUntil).toLocaleDateString()}
+                        {quote.validUntil ? new Date(quote.validUntil).toLocaleDateString() : 'N/A'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-500">
-                        {formatDistanceToNow(new Date(quote.createdAt), { addSuffix: true })}
+                        {quote.createdAt ? formatDistanceToNow(new Date(quote.createdAt), { addSuffix: true }) : 'N/A'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -342,14 +325,14 @@ function Quotes() {
           onClose={() => setShowDetailModal(false)}
           quote={selectedQuote}
           onEdit={() => {
-            setEditingQuote(selectedQuote)
-            setShowDetailModal(false)
-            setShowAddModal(true)
+            setEditingQuote(selectedQuote);
+            setShowDetailModal(false);
+            setShowAddModal(true);
           }}
         />
       )}
     </div>
-  )
+  );
 }
 
-export default Quotes
+export default Quotes;

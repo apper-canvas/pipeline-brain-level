@@ -1,88 +1,124 @@
-import { useState } from 'react'
-import PipelineBoard from '@/components/organisms/PipelineBoard'
-import AddDealModal from '@/components/organisms/AddDealModal'
-import DealDetailModal from '@/components/organisms/DealDetailModal'
-import AddContactModal from '@/components/organisms/AddContactModal'
-import Button from '@/components/atoms/Button'
-import ApperIcon from '@/components/ApperIcon'
+import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import { dealService } from "@/services/api/dealService";
+import { stageService } from "@/services/api/stageService";
+import { create as createCompany, getAll as getAllCompanies, update as updateCompany } from "@/services/api/companyService";
+import { create as createQuote, getAll as getAllQuotes, update as updateQuote } from "@/services/api/quoteService";
+import ApperIcon from "@/components/ApperIcon";
+import Loading from "@/components/ui/Loading";
+import ErrorView from "@/components/ui/ErrorView";
+import Button from "@/components/atoms/Button";
+import PipelineBoard from "@/components/organisms/PipelineBoard";
+import AddContactModal from "@/components/organisms/AddContactModal";
+import DealDetailModal from "@/components/organisms/DealDetailModal";
+import AddDealModal from "@/components/organisms/AddDealModal";
 
-const Pipeline = () => {
-  const [showAddDeal, setShowAddDeal] = useState(false)
-  const [showAddContact, setShowAddContact] = useState(false)
-  const [selectedDeal, setSelectedDeal] = useState(null)
-  const [refreshKey, setRefreshKey] = useState(0)
+export default function Pipeline() {
+  const [deals, setDeals] = useState([]);
+  const [stages, setStages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [selectedDeal, setSelectedDeal] = useState(null);
 
-  const handleAddDeal = () => {
-    setShowAddDeal(true)
-  }
+  useEffect(() => {
+    loadData();
+  }, []);
 
-  const handleEditDeal = (deal) => {
-    // For now, just view the deal - edit functionality would be similar to add
-    setSelectedDeal(deal)
-  }
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [dealsData, stagesData] = await Promise.all([
+        dealService.getAll(),
+        stageService.getAll()
+      ]);
+      setDeals(dealsData);
+      setStages(stagesData);
+      setError(null);
+    } catch (error) {
+      console.error('Error loading pipeline data:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const handleViewDeal = (deal) => {
-    setSelectedDeal(deal)
-  }
+  const handleAddDeal = async (dealData) => {
+    try {
+      await dealService.create(dealData);
+      await loadData();
+      setIsAddModalOpen(false);
+      toast.success('Deal created successfully!');
+    } catch (error) {
+      console.error('Error creating deal:', error);
+      toast.error('Failed to create deal');
+    }
+  };
 
-  const handleSuccess = () => {
-    setRefreshKey(prev => prev + 1)
-  }
+  const handleUpdateDeal = async (dealId, dealData) => {
+    try {
+      await dealService.update(dealId, dealData);
+      await loadData();
+      setSelectedDeal(null);
+      toast.success('Deal updated successfully!');
+    } catch (error) {
+      console.error('Error updating deal:', error);
+      toast.error('Failed to update deal');
+    }
+  };
+
+  const handleDeleteDeal = async (dealId) => {
+    try {
+      await dealService.delete(dealId);
+      await loadData();
+      setSelectedDeal(null);
+      toast.success('Deal deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting deal:', error);
+      toast.error('Failed to delete deal');
+    }
+  };
+
+  if (loading) return <Loading />;
+  if (error) return <ErrorView message={error} onRetry={loadData} />;
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-navy-500">Sales Pipeline</h1>
-          <p className="text-gray-600 mt-1">Track and manage your sales opportunities</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button
-            variant="secondary"
-            onClick={() => setShowAddContact(true)}
-            className="hidden sm:flex items-center gap-2"
-          >
-            <ApperIcon name="UserPlus" className="w-4 h-4" />
-            Add Contact
-          </Button>
-          <Button onClick={handleAddDeal} className="flex items-center gap-2">
-            <ApperIcon name="Plus" className="w-4 h-4" />
-            Add Deal
-          </Button>
-        </div>
+        <h1 className="text-2xl font-bold text-gray-900">Sales Pipeline</h1>
+        
+        <Button
+          onClick={() => setIsAddModalOpen(true)}
+          className="flex items-center space-x-2"
+        >
+          <ApperIcon name="Plus" size={16} />
+          <span>Add Deal</span>
+        </Button>
       </div>
 
-      {/* Pipeline Board */}
-      <div className="bg-white rounded-lg shadow-card border border-gray-200 p-6">
-        <PipelineBoard
-          key={refreshKey}
-          onAddDeal={handleAddDeal}
-          onEditDeal={handleEditDeal}
-          onViewDeal={handleViewDeal}
+      <PipelineBoard 
+        deals={deals}
+        stages={stages}
+        onDealClick={setSelectedDeal}
+      />
+
+      {isAddModalOpen && (
+        <AddDealModal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          onSubmit={handleAddDeal}
         />
-      </div>
+      )}
 
-      {/* Modals */}
-      <AddDealModal
-        isOpen={showAddDeal}
-        onClose={() => setShowAddDeal(false)}
-        onSuccess={handleSuccess}
-      />
-
-      <AddContactModal
-        isOpen={showAddContact}
-        onClose={() => setShowAddContact(false)}
-        onSuccess={handleSuccess}
-      />
-
-      <DealDetailModal
-        isOpen={!!selectedDeal}
-        onClose={() => setSelectedDeal(null)}
-        deal={selectedDeal}
-      />
+      {selectedDeal && (
+        <DealDetailModal
+          deal={selectedDeal}
+          isOpen={!!selectedDeal}
+          onClose={() => setSelectedDeal(null)}
+          onUpdate={handleUpdateDeal}
+          onDelete={handleDeleteDeal}
+        />
+      )}
     </div>
-  )
+  );
 }
-
-export default Pipeline

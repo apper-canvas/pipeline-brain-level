@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { taskService } from "@/services/api/taskService";
 import { toast } from "react-toastify";
-import { create, update } from "@/services/api/companyService";
 import ApperIcon from "@/components/ApperIcon";
 import Button from "@/components/atoms/Button";
 import FormField from "@/components/molecules/FormField";
@@ -16,8 +15,9 @@ export default function AddTaskModal({ task, isEditing, onClose, onSuccess }) {
     assignee: '',
     dealId: ''
   });
-  const [loading, setLoading] = useState(false);
+  
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (isEditing && task) {
@@ -65,7 +65,7 @@ export default function AddTaskModal({ task, isEditing, onClose, onSuccess }) {
     return Object.keys(newErrors).length === 0;
   }
 
-  async function handleSubmit(e) {
+async function handleSubmit(e) {
     e.preventDefault();
     
     if (!validateForm()) {

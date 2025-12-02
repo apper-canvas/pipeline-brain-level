@@ -1,6 +1,7 @@
-import { useState } from 'react'
-import DealCard from '@/components/molecules/DealCard'
-import ApperIcon from '@/components/ApperIcon'
+import React, { useState } from "react";
+import ApperIcon from "@/components/ApperIcon";
+import Badge from "@/components/atoms/Badge";
+import DealCard from "@/components/molecules/DealCard";
 
 const PipelineColumn = ({ 
   stage, 
@@ -8,11 +9,14 @@ const PipelineColumn = ({
   contacts, 
   total, 
   onDragEnd, 
-  onEditDeal, 
-  onViewDeal, 
-  getContactById 
+  onEditDeal,
+  onViewDeal 
 }) => {
   const [draggedOver, setDraggedOver] = useState(false)
+
+  const getContactById = (contactId) => {
+    return contacts?.find(contact => contact.Id === contactId) || null
+  }
 
   const handleDragOver = (e) => {
     e.preventDefault()
