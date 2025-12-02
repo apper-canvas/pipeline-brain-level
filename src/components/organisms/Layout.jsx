@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import ApperIcon from '@/components/ApperIcon';
-import { Header } from './Header';
+import React, { useState } from "react";
+import { Outlet, useLocation } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import { Header } from "@/components/organisms/Header";
+import ApperIcon from "@/components/ApperIcon";
 
 export default function Layout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -74,17 +74,17 @@ export default function Layout() {
             className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
             onClick={() => setIsMobileMenuOpen(false)}
           />
-        )}
+)}
 
         {/* Main content */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 flex flex-col min-h-screen">
           <Header 
             title={getPageTitle()}
             onMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             isMobileMenuOpen={isMobileMenuOpen}
           />
           
-          <main className="p-6">
+          <main className="flex-1 p-6">
             <Outlet />
           </main>
         </div>
