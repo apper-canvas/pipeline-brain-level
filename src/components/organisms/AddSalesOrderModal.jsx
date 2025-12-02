@@ -7,7 +7,7 @@ import Select from '@/components/atoms/Select';
 import FormField from '@/components/molecules/FormField';
 import { companyService } from '@/services/api/companyService';
 import { contactService } from '@/services/api/contactService';
-import quoteService from '@/services/api/quoteService';
+import { quoteService } from '@/services/api/quoteService';
 
 const AddSalesOrderModal = ({ isOpen, onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
