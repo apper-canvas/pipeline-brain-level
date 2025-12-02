@@ -65,11 +65,14 @@ const SalesOrders = () => {
     }
   };
 
-  const filteredOrders = salesOrders.filter(order =>
+const filteredOrders = salesOrders.filter(order =>
     order?.Name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order?.company_id_c?.Name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order?.contact_id_c?.Name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order?.status_c?.toLowerCase().includes(searchTerm.toLowerCase())
+    order?.customer_id_c?.Name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    order?.status_c?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    order?.Tags?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    order?.notes_c?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    order?.shipping_address_c?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    order?.billing_address_c?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const formatCurrency = (amount) => {
@@ -80,16 +83,31 @@ const SalesOrders = () => {
     }).format(amount);
   };
 
-  const formatDate = (dateString) => {
+const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString();
+  };
+
+  const formatDateTime = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleString();
+  };
+
+  const truncateText = (text, maxLength = 50) => {
+    if (!text) return 'N/A';
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+  };
+
+  const formatTags = (tags) => {
+    if (!tags) return 'N/A';
+    return tags.split(',').map(tag => tag.trim()).join(', ');
   };
 
   const getStatusBadge = (status) => {
     const statusColors = {
       'Draft': 'bg-gray-100 text-gray-800',
       'Confirmed': 'bg-blue-100 text-blue-800',
-      'In Progress': 'bg-yellow-100 text-yellow-800',
+      'Shipped': 'bg-yellow-100 text-yellow-800',
       'Delivered': 'bg-green-100 text-green-800',
       'Cancelled': 'bg-red-100 text-red-800'
     };
@@ -153,15 +171,12 @@ const SalesOrders = () => {
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
-                <tr>
+<tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Order
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Company
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Contact
+                    Customer
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Order Date
@@ -172,13 +187,40 @@ const SalesOrders = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Tags
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Owner
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Created On
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Created By
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Modified On
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Modified By
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Shipping Address
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Billing Address
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Notes
+                  </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredOrders.map((order) => (
+{filteredOrders.map((order) => (
                   <tr key={order.Id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
@@ -187,12 +229,7 @@ const SalesOrders = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {order.company_id_c?.Name || 'N/A'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {order.contact_id_c?.Name || 'N/A'}
+                        {order.customer_id_c?.Name || 'N/A'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -207,6 +244,51 @@ const SalesOrders = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {getStatusBadge(order.status_c)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {formatTags(order.Tags)}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {order.Owner?.Name || 'N/A'}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {formatDateTime(order.CreatedOn)}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {order.CreatedBy?.Name || 'N/A'}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {formatDateTime(order.ModifiedOn)}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {order.ModifiedBy?.Name || 'N/A'}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900" title={order.shipping_address_c}>
+                        {truncateText(order.shipping_address_c)}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900" title={order.billing_address_c}>
+                        {truncateText(order.billing_address_c)}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900" title={order.notes_c}>
+                        {truncateText(order.notes_c)}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end gap-2">
