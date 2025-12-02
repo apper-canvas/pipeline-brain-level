@@ -139,47 +139,14 @@ const handleDeleteTaskAsync = async (taskId) => {
       case 'Medium': return 'warning';
       default: return 'success';
     }
-  };
-                <tr key={task.Id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{task.title_c}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <Badge 
-                      className={
-                        task.priority_c === 'High' ? 'bg-red-100 text-red-800' :
-                        task.priority_c === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-green-100 text-green-800'
-                      }
-                    >
-                      {task.priority_c}
-                    </Badge>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-<Badge 
-                      className={
-                        task.status_c === 'Completed' ? 'bg-green-100 text-green-800' :
-                        task.status_c === 'In Progress' ? 'bg-blue-100 text-blue-800' :
-                        'bg-gray-100 text-gray-800'
-                      }
-                    >
-                      {task.status_c}
-                    </Badge>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-<div className="text-sm text-gray-900">
-                      {task.due_date_c ? new Date(task.due_date_c).toLocaleDateString() : 'No due date'}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{task.assigned_to_c}</div>
-                  </td>
+};
 
-const isTaskOverdue = (task) => {
+  const isTaskOverdue = (task) => {
     if (!task.due_date_c || task.status_c === 'Completed') return false;
     const today = new Date().toISOString().split('T')[0];
     return task.due_date_c < today;
   };
+
   function formatDate(dateString) {
     if (!dateString) return 'No due date';
     const date = new Date(dateString);
@@ -193,10 +160,12 @@ const isTaskOverdue = (task) => {
   if (loading) {
     return <Loading />;
   }
-if (error) {
+
+  if (error) {
     return <ErrorView message={error} onRetry={loadTasks} />;
   }
-  return (
+
+return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
         <div className="mb-4 sm:mb-0">
@@ -348,13 +317,12 @@ if (error) {
           onEdit={() => {
             setShowDetailModal(false);
             handleEditTask(selectedTask);
-onDelete={() => handleDeleteTaskAsync(selectedTask.Id)}
+}}
+          onDelete={() => handleDeleteTaskAsync(selectedTask.Id)}
         />
-      )}
+)}
     </div>
   );
 };
 
 export default Tasks;
-  );
-}

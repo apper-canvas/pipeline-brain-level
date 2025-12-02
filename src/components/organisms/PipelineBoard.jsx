@@ -123,5 +123,3 @@ const PipelineBoard = ({ onEditDeal, onViewDeal, onAddDeal }) => {
 };
 
 export default PipelineBoard;
-
-export default PipelineBoard

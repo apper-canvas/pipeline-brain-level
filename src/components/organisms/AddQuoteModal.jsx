@@ -211,7 +211,7 @@ async function onSubmit(e) {
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+<form onSubmit={onSubmit} className="p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 label="Customer"
