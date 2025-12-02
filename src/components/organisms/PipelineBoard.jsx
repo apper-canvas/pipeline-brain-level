@@ -10,7 +10,7 @@ import ErrorView from "@/components/ui/ErrorView";
 import Empty from "@/components/ui/Empty";
 import PipelineColumn from "@/components/molecules/PipelineColumn";
 
-const PipelineBoard = ({ onEditDeal, onViewDeal, onAddDeal }) => {
+const PipelineBoard = ({ deals: propDeals, stages: propStages, onEditDeal, onViewDeal, onAddDeal, onDealClick }) => {
   const [stages, setStages] = useState([]);
   const [deals, setDeals] = useState([]);
   const [contacts, setContacts] = useState([]);
@@ -37,8 +37,22 @@ const PipelineBoard = ({ onEditDeal, onViewDeal, onAddDeal }) => {
         setLoading(false);
       }
     };
-    loadData();
-  }, []);
+
+    // Use props if available, otherwise load data
+    if (propDeals && propStages) {
+      setDeals(propDeals);
+      setStages(propStages);
+      setLoading(false);
+      
+      // Still load contacts as they're not provided via props
+      contactService.getAll().then(setContacts).catch(err => {
+        console.error('Error loading contacts:', err);
+        setError("Failed to load contacts data.");
+      });
+    } else {
+      loadData();
+    }
+  }, [propDeals, propStages]);
 
   const handleDealMove = async (dealId, newStageId) => {
     try {
@@ -97,10 +111,10 @@ const getContactById = (contactId) => {
     );
   }
 
-  return (
+return (
     <div className="h-full">
       <div className="flex gap-6 overflow-x-auto pb-4 min-h-[600px]">
-{stages.map((stage) => (
+        {stages.map((stage) => (
           <PipelineColumn
             key={stage.Id}
             stage={stage}
@@ -110,6 +124,7 @@ const getContactById = (contactId) => {
             onDragEnd={handleDragEnd}
             onEditDeal={onEditDeal}
             onViewDeal={onViewDeal}
+            onDealClick={onDealClick}
             getContactById={getContactById}
           />
         ))}
