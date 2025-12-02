@@ -2,8 +2,8 @@ import { getApperClient } from '@/services/apperClient';
 
 class SalesOrderService {
   constructor() {
-    // Identify lookup fields for proper handling
-    this.lookupFields = ['company_id_c', 'contact_id_c', 'quote_id_c'];
+// Identify lookup fields for proper handling
+    this.lookupFields = ['customer_id_c', 'Owner', 'CreatedBy', 'ModifiedBy'];
   }
 
   // Prepare lookup fields for create/update operations
@@ -29,16 +29,23 @@ class SalesOrderService {
         throw new Error('ApperClient not initialized');
       }
 
-      const params = {
+const params = {
         fields: [
           { field: { Name: 'Id' } },
           { field: { Name: 'Name' } },
+          { field: { Name: 'Tags' } },
+          { field: { Name: 'Owner' } },
+          { field: { Name: 'CreatedOn' } },
+          { field: { Name: 'CreatedBy' } },
+          { field: { Name: 'ModifiedOn' } },
+          { field: { Name: 'ModifiedBy' } },
           { field: { Name: 'order_date_c' } },
+          { field: { Name: 'customer_id_c' } },
           { field: { Name: 'total_amount_c' } },
           { field: { Name: 'status_c' } },
-          { field: { Name: 'company_id_c' } },
-          { field: { Name: 'contact_id_c' } },
-          { field: { Name: 'quote_id_c' } }
+          { field: { Name: 'shipping_address_c' } },
+          { field: { Name: 'billing_address_c' } },
+          { field: { Name: 'notes_c' } }
         ],
         orderBy: [{ fieldName: 'Id', sorttype: 'DESC' }],
         pagingInfo: { limit: 100, offset: 0 }
@@ -65,16 +72,23 @@ class SalesOrderService {
         throw new Error('ApperClient not initialized');
       }
 
-      const params = {
+const params = {
         fields: [
           { field: { Name: 'Id' } },
           { field: { Name: 'Name' } },
+          { field: { Name: 'Tags' } },
+          { field: { Name: 'Owner' } },
+          { field: { Name: 'CreatedOn' } },
+          { field: { Name: 'CreatedBy' } },
+          { field: { Name: 'ModifiedOn' } },
+          { field: { Name: 'ModifiedBy' } },
           { field: { Name: 'order_date_c' } },
+          { field: { Name: 'customer_id_c' } },
           { field: { Name: 'total_amount_c' } },
           { field: { Name: 'status_c' } },
-          { field: { Name: 'company_id_c' } },
-          { field: { Name: 'contact_id_c' } },
-          { field: { Name: 'quote_id_c' } }
+          { field: { Name: 'shipping_address_c' } },
+          { field: { Name: 'billing_address_c' } },
+          { field: { Name: 'notes_c' } }
         ]
       };
 
@@ -110,9 +124,11 @@ class SalesOrderService {
         record.total_amount_c = parseFloat(preparedData.total_amount_c);
       }
       if (preparedData.status_c && preparedData.status_c.trim()) record.status_c = preparedData.status_c.trim();
-      if (preparedData.company_id_c) record.company_id_c = preparedData.company_id_c;
-      if (preparedData.contact_id_c) record.contact_id_c = preparedData.contact_id_c;
-      if (preparedData.quote_id_c) record.quote_id_c = preparedData.quote_id_c;
+if (preparedData.customer_id_c) record.customer_id_c = preparedData.customer_id_c;
+      if (preparedData.Tags && preparedData.Tags.trim()) record.Tags = preparedData.Tags.trim();
+      if (preparedData.shipping_address_c && preparedData.shipping_address_c.trim()) record.shipping_address_c = preparedData.shipping_address_c.trim();
+      if (preparedData.billing_address_c && preparedData.billing_address_c.trim()) record.billing_address_c = preparedData.billing_address_c.trim();
+      if (preparedData.notes_c && preparedData.notes_c.trim()) record.notes_c = preparedData.notes_c.trim();
 
       const params = { records: [record] };
 
@@ -167,9 +183,11 @@ class SalesOrderService {
         record.total_amount_c = parseFloat(preparedData.total_amount_c);
       }
       if (preparedData.status_c && preparedData.status_c.trim()) record.status_c = preparedData.status_c.trim();
-      if (preparedData.company_id_c) record.company_id_c = preparedData.company_id_c;
-      if (preparedData.contact_id_c) record.contact_id_c = preparedData.contact_id_c;
-      if (preparedData.quote_id_c) record.quote_id_c = preparedData.quote_id_c;
+if (preparedData.customer_id_c) record.customer_id_c = preparedData.customer_id_c;
+      if (preparedData.Tags && preparedData.Tags.trim()) record.Tags = preparedData.Tags.trim();
+      if (preparedData.shipping_address_c && preparedData.shipping_address_c.trim()) record.shipping_address_c = preparedData.shipping_address_c.trim();
+      if (preparedData.billing_address_c && preparedData.billing_address_c.trim()) record.billing_address_c = preparedData.billing_address_c.trim();
+      if (preparedData.notes_c && preparedData.notes_c.trim()) record.notes_c = preparedData.notes_c.trim();
 
       const params = { records: [record] };
 

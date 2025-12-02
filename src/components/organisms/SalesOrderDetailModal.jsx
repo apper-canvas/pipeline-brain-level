@@ -23,13 +23,29 @@ const SalesOrderDetailModal = ({ isOpen, onClose, salesOrder }) => {
     });
   };
 
+const formatDateTime = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const formatTags = (tags) => {
+    if (!tags) return 'N/A';
+    return tags.split(',').map(tag => tag.trim()).join(', ');
+  };
+
   const getStatusBadge = (status) => {
     const statusConfig = {
-      'Draft': { variant: 'secondary', color: 'gray' },
-      'Confirmed': { variant: 'primary', color: 'blue' },
-      'In Progress': { variant: 'warning', color: 'yellow' },
-      'Delivered': { variant: 'success', color: 'green' },
-      'Cancelled': { variant: 'destructive', color: 'red' }
+      'Draft': { color: 'gray' },
+      'Confirmed': { color: 'blue' },
+      'Shipped': { color: 'yellow' },
+      'Delivered': { color: 'green' },
+      'Cancelled': { color: 'red' }
     };
 
     const config = statusConfig[status] || statusConfig['Draft'];
@@ -67,8 +83,7 @@ const SalesOrderDetailModal = ({ isOpen, onClose, salesOrder }) => {
               {getStatusBadge(salesOrder.status_c)}
             </div>
           </div>
-
-          {/* Order Information */}
+{/* Basic Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
@@ -88,62 +103,129 @@ const SalesOrderDetailModal = ({ isOpen, onClose, salesOrder }) => {
                   {formatCurrency(salesOrder.total_amount_c)}
                 </p>
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tags
+                </label>
+                <p className="text-sm text-gray-900">
+                  {formatTags(salesOrder.Tags)}
+                </p>
+              </div>
             </div>
 
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Company
+                  Customer
                 </label>
                 <p className="text-sm text-gray-900">
-                  {salesOrder.company_id_c?.Name || 'N/A'}
+                  {salesOrder.customer_id_c?.Name || 'N/A'}
                 </p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Contact
+                  Owner
                 </label>
                 <p className="text-sm text-gray-900">
-                  {salesOrder.contact_id_c?.Name || 'N/A'}
+                  {salesOrder.Owner?.Name || 'N/A'}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Quote Information */}
-          {salesOrder.quote_id_c && (
+          {/* Address Information */}
+          <div className="border-t pt-6">
+            <h4 className="text-md font-medium text-gray-900 mb-4">Address Information</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Shipping Address
+                </label>
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-sm text-gray-900 whitespace-pre-wrap">
+                    {salesOrder.shipping_address_c || 'No shipping address provided'}
+                  </p>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Billing Address
+                </label>
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-sm text-gray-900 whitespace-pre-wrap">
+                    {salesOrder.billing_address_c || 'No billing address provided'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Notes */}
+          {salesOrder.notes_c && (
             <div className="border-t pt-6">
-              <h4 className="text-md font-medium text-gray-900 mb-3">Related Quote</h4>
+              <h4 className="text-md font-medium text-gray-900 mb-3">Notes</h4>
               <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-sm text-gray-900">
-                  <span className="font-medium">Quote:</span> {salesOrder.quote_id_c?.Name || `Quote #${salesOrder.quote_id_c?.Id}`}
+                <p className="text-sm text-gray-900 whitespace-pre-wrap">
+                  {salesOrder.notes_c}
                 </p>
               </div>
             </div>
           )}
 
-          {/* Status Information */}
+          {/* System Information */}
           <div className="border-t pt-6">
-            <h4 className="text-md font-medium text-gray-900 mb-3">Status Information</h4>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-gray-700">Current Status:</span>
-                {getStatusBadge(salesOrder.status_c)}
+            <h4 className="text-md font-medium text-gray-900 mb-4">System Information</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                    Created On
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {formatDateTime(salesOrder.CreatedOn)}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                    Created By
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {salesOrder.CreatedBy?.Name || 'N/A'}
+                  </p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                    Last Modified
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {formatDateTime(salesOrder.ModifiedOn)}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                    Modified By
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {salesOrder.ModifiedBy?.Name || 'N/A'}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-
-          {/* Action Summary */}
+{/* Order Summary */}
           <div className="bg-blue-50 rounded-lg p-4">
             <div className="flex items-start gap-3">
               <ApperIcon name="Info" size={16} className="text-blue-600 mt-0.5" />
               <div>
-                <h5 className="text-sm font-medium text-blue-900">Order Information</h5>
+                <h5 className="text-sm font-medium text-blue-900">Order Summary</h5>
                 <p className="text-xs text-blue-700 mt-1">
-                  This sales order was created on {formatDate(salesOrder.order_date_c)} 
-                  {salesOrder.company_id_c?.Name && ` for ${salesOrder.company_id_c.Name}`}.
-                  {salesOrder.quote_id_c && ` It is based on quote ${salesOrder.quote_id_c?.Name || salesOrder.quote_id_c?.Id}.`}
+                  This sales order was created on {formatDate(salesOrder.order_date_c)}
+                  {salesOrder.customer_id_c?.Name && ` for ${salesOrder.customer_id_c.Name}`}.
+                  Current status: {salesOrder.status_c || 'Draft'}.
                 </p>
               </div>
             </div>

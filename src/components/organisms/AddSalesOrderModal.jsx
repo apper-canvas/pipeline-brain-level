@@ -1,28 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import ApperIcon from '@/components/ApperIcon';
-import Button from '@/components/atoms/Button';
-import Input from '@/components/atoms/Input';
-import Label from '@/components/atoms/Label';
-import Select from '@/components/atoms/Select';
-import FormField from '@/components/molecules/FormField';
-import { companyService } from '@/services/api/companyService';
-import { contactService } from '@/services/api/contactService';
-import { quoteService } from '@/services/api/quoteService';
+import React, { useEffect, useState } from "react";
+import { companyService } from "@/services/api/companyService";
+import ApperIcon from "@/components/ApperIcon";
+import Select from "@/components/atoms/Select";
+import Label from "@/components/atoms/Label";
+import Button from "@/components/atoms/Button";
+import Input from "@/components/atoms/Input";
+import FormField from "@/components/molecules/FormField";
 
 const AddSalesOrderModal = ({ isOpen, onClose, onSubmit }) => {
-  const [formData, setFormData] = useState({
+const [formData, setFormData] = useState({
     Name: '',
+    Tags: '',
     order_date_c: new Date().toISOString().split('T')[0],
     total_amount_c: '',
     status_c: 'Draft',
-    company_id_c: '',
-    contact_id_c: '',
-    quote_id_c: ''
+    customer_id_c: '',
+    shipping_address_c: '',
+    billing_address_c: '',
+    notes_c: ''
   });
   const [loading, setLoading] = useState(false);
-  const [companies, setCompanies] = useState([]);
-  const [contacts, setContacts] = useState([]);
-  const [quotes, setQuotes] = useState([]);
+const [companies, setCompanies] = useState([]);
   const [loadingOptions, setLoadingOptions] = useState(true);
 
   useEffect(() => {
@@ -31,18 +29,11 @@ const AddSalesOrderModal = ({ isOpen, onClose, onSubmit }) => {
     }
   }, [isOpen]);
 
-  const loadOptions = async () => {
+const loadOptions = async () => {
     setLoadingOptions(true);
     try {
-      const [companiesData, contactsData, quotesData] = await Promise.all([
-        companyService.getAll().catch(() => []),
-        contactService.getAll().catch(() => []),
-        quoteService.getAll().catch(() => [])
-      ]);
-      
+      const companiesData = await companyService.getAll().catch(() => []);
       setCompanies(companiesData || []);
-      setContacts(contactsData || []);
-      setQuotes(quotesData || []);
     } catch (error) {
       console.error('Error loading options:', error);
     } finally {
@@ -57,14 +48,16 @@ const AddSalesOrderModal = ({ isOpen, onClose, onSubmit }) => {
     setLoading(true);
     try {
       await onSubmit(formData);
-      setFormData({
+setFormData({
         Name: '',
+        Tags: '',
         order_date_c: new Date().toISOString().split('T')[0],
+        customer_id_c: '',
         total_amount_c: '',
         status_c: 'Draft',
-        company_id_c: '',
-        contact_id_c: '',
-        quote_id_c: ''
+        shipping_address_c: '',
+        billing_address_c: '',
+        notes_c: ''
       });
     } catch (error) {
       console.error('Error creating sales order:', error);
@@ -80,10 +73,10 @@ const AddSalesOrderModal = ({ isOpen, onClose, onSubmit }) => {
     }));
   };
 
-  const statusOptions = [
+const statusOptions = [
     { value: 'Draft', label: 'Draft' },
     { value: 'Confirmed', label: 'Confirmed' },
-    { value: 'In Progress', label: 'In Progress' },
+    { value: 'Shipped', label: 'Shipped' },
     { value: 'Delivered', label: 'Delivered' },
     { value: 'Cancelled', label: 'Cancelled' }
   ];
@@ -103,13 +96,21 @@ const AddSalesOrderModal = ({ isOpen, onClose, onSubmit }) => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+<form onSubmit={handleSubmit} className="p-6 space-y-6">
           <FormField label="Order Name" required>
             <Input
               value={formData.Name}
               onChange={(e) => handleChange('Name', e.target.value)}
               placeholder="Enter sales order name"
               required
+            />
+          </FormField>
+
+          <FormField label="Tags">
+            <Input
+              value={formData.Tags}
+              onChange={(e) => handleChange('Tags', e.target.value)}
+              placeholder="Enter tags (comma-separated)"
             />
           </FormField>
 
@@ -147,52 +148,51 @@ const AddSalesOrderModal = ({ isOpen, onClose, onSubmit }) => {
               ))}
             </Select>
           </FormField>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField label="Company">
-              <Select
-                value={formData.company_id_c}
-                onValueChange={(value) => handleChange('company_id_c', value)}
-                placeholder={loadingOptions ? "Loading companies..." : "Select company"}
-                disabled={loadingOptions}
-              >
-                {companies.map((company) => (
-                  <Select.Option key={company.Id} value={company.Id.toString()}>
-                    {company.Name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </FormField>
-
-            <FormField label="Contact">
-              <Select
-                value={formData.contact_id_c}
-                onValueChange={(value) => handleChange('contact_id_c', value)}
-                placeholder={loadingOptions ? "Loading contacts..." : "Select contact"}
-                disabled={loadingOptions}
-              >
-                {contacts.map((contact) => (
-                  <Select.Option key={contact.Id} value={contact.Id.toString()}>
-                    {contact.Name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </FormField>
-          </div>
-
-          <FormField label="Quote">
+<FormField label="Customer">
             <Select
-              value={formData.quote_id_c}
-              onValueChange={(value) => handleChange('quote_id_c', value)}
-              placeholder={loadingOptions ? "Loading quotes..." : "Select quote (optional)"}
+              value={formData.customer_id_c}
+              onValueChange={(value) => handleChange('customer_id_c', value)}
+              placeholder={loadingOptions ? "Loading companies..." : "Select customer"}
               disabled={loadingOptions}
             >
-              {quotes.map((quote) => (
-                <Select.Option key={quote.Id} value={quote.Id.toString()}>
-                  {quote.Name}
+              {companies.map((company) => (
+                <Select.Option key={company.Id} value={company.Id.toString()}>
+                  {company.Name}
                 </Select.Option>
               ))}
             </Select>
+          </FormField>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField label="Shipping Address">
+              <textarea
+                className="min-h-[80px] w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent resize-vertical"
+                value={formData.shipping_address_c}
+                onChange={(e) => handleChange('shipping_address_c', e.target.value)}
+                placeholder="Enter shipping address"
+                rows={3}
+              />
+            </FormField>
+
+            <FormField label="Billing Address">
+              <textarea
+                className="min-h-[80px] w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent resize-vertical"
+                value={formData.billing_address_c}
+                onChange={(e) => handleChange('billing_address_c', e.target.value)}
+                placeholder="Enter billing address"
+                rows={3}
+              />
+            </FormField>
+          </div>
+
+          <FormField label="Notes">
+            <textarea
+              className="min-h-[80px] w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent resize-vertical"
+              value={formData.notes_c}
+              onChange={(e) => handleChange('notes_c', e.target.value)}
+              placeholder="Enter any additional notes"
+              rows={3}
+            />
           </FormField>
 
           <div className="flex justify-end gap-3 pt-4 border-t">
