@@ -1,17 +1,17 @@
-import React, { useEffect, useState } from 'react'
-import salesOrderService from '@/services/api/salesOrderService'
-import { getAll as getAllCompanies } from '@/services/api/companyService'
-import { formatDistanceToNow } from 'date-fns'
-import { toast } from 'react-toastify'
-import ApperIcon from '@/components/ApperIcon'
-import Loading from '@/components/ui/Loading'
-import ErrorView from '@/components/ui/ErrorView'
-import Empty from '@/components/ui/Empty'
-import Button from '@/components/atoms/Button'
-import Badge from '@/components/atoms/Badge'
-import AddSalesOrderModal from '@/components/organisms/AddSalesOrderModal'
-import SalesOrderDetailModal from '@/components/organisms/SalesOrderDetailModal'
-import SearchBar from '@/components/molecules/SearchBar'
+import React, { useEffect, useState } from "react";
+import { companyService } from "@/services/api/companyService";
+import { formatDistanceToNow } from "date-fns";
+import { toast } from "react-toastify";
+import salesOrderService from "@/services/api/salesOrderService";
+import ApperIcon from "@/components/ApperIcon";
+import Loading from "@/components/ui/Loading";
+import ErrorView from "@/components/ui/ErrorView";
+import Empty from "@/components/ui/Empty";
+import Button from "@/components/atoms/Button";
+import Badge from "@/components/atoms/Badge";
+import AddSalesOrderModal from "@/components/organisms/AddSalesOrderModal";
+import SalesOrderDetailModal from "@/components/organisms/SalesOrderDetailModal";
+import SearchBar from "@/components/molecules/SearchBar";
 
 export default function SalesOrders() {
   const [salesOrders, setSalesOrders] = useState([])
@@ -47,9 +47,9 @@ export default function SalesOrders() {
     }
   }
 
-  async function loadCompanies() {
+async function loadCompanies() {
     try {
-      const companyData = await getAllCompanies()
+      const companyData = await companyService.getAll()
       setCompanies(companyData)
     } catch (err) {
       console.error('Error loading companies:', err)
