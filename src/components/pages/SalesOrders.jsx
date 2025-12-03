@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { salesOrderService } from '@/services/api/salesOrderService'
+import salesOrderService from '@/services/api/salesOrderService'
 import { getAll as getAllCompanies } from '@/services/api/companyService'
 import { formatDistanceToNow } from 'date-fns'
 import { toast } from 'react-toastify'
