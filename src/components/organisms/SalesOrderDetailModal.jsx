@@ -60,11 +60,14 @@ export default function SalesOrderDetailModal({
         </div>
 
         <div className="p-6 space-y-6">
-          {/* Status and Basic Info */}
+{/* Status and Basic Info */}
           <div className="flex items-center justify-between">
-            <Badge className={getStatusColor(salesOrder.status_c)} size="lg">
+            <button 
+              onClick={() => onEdit(salesOrder)}
+              className={`${getStatusColor(salesOrder.status_c)} px-3 py-1 rounded-full text-sm font-medium cursor-pointer hover:opacity-80 transition-opacity`}
+            >
               {salesOrder.status_c || 'Draft'}
-            </Badge>
+            </button>
             <div className="text-right">
               <div className="text-2xl font-bold text-gray-900">
                 {formatCurrency(salesOrder.total_amount_c)}
@@ -74,12 +77,16 @@ export default function SalesOrderDetailModal({
           </div>
 
           {/* Customer and Date Info */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h3 className="text-sm font-medium text-gray-700 mb-2">Customer</h3>
-              <div className="text-gray-900">
+              <button 
+                onClick={() => onEdit(salesOrder)}
+                className="text-gray-900 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-md transition-colors cursor-pointer flex items-center gap-2 -ml-2"
+              >
+                <ApperIcon name="User" size={16} />
                 {salesOrder.customer_id_c?.Name || 'No Customer'}
-              </div>
+              </button>
             </div>
             <div>
               <h3 className="text-sm font-medium text-gray-700 mb-2">Order Date</h3>
