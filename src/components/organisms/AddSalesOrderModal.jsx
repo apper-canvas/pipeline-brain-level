@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { salesOrderService } from '@/services/api/salesOrderService'
+import salesOrderService from '@/services/api/salesOrderService'
 import { toast } from 'react-toastify'
 import Button from '@/components/atoms/Button'
 import Input from '@/components/atoms/Input'
