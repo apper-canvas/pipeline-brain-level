@@ -7,13 +7,13 @@ import ApperIcon from "@/components/ApperIcon";
 export default function Layout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
-
 const navigation = [
     { name: 'Pipeline', path: '/', icon: 'BarChart3' },
     { name: 'Companies', path: '/companies', icon: 'Building2' },
     { name: 'Contacts', path: '/contacts', icon: 'Users' },
     { name: 'Tasks', path: '/tasks', icon: 'CheckSquare' },
     { name: 'Quotes', path: '/quotes', icon: 'FileText' },
+    { name: 'Sales Orders', path: '/sales-orders', icon: 'ShoppingCart' },
   ];
 
   const getPageTitle = () => {
