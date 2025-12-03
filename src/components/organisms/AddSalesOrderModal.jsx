@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react'
-import salesOrderService from '@/services/api/salesOrderService'
-import { toast } from 'react-toastify'
-import Button from '@/components/atoms/Button'
-import Input from '@/components/atoms/Input'
-import Select from '@/components/atoms/Select'
-import Label from '@/components/atoms/Label'
-import FormField from '@/components/molecules/FormField'
-import ApperIcon from '@/components/ApperIcon'
+import React, { useEffect, useState } from "react";
+import { companyService } from "@/services/api/companyService";
+import { toast } from "react-toastify";
+import salesOrderService from "@/services/api/salesOrderService";
+import ApperIcon from "@/components/ApperIcon";
+import Select from "@/components/atoms/Select";
+import Label from "@/components/atoms/Label";
+import Button from "@/components/atoms/Button";
+import Input from "@/components/atoms/Input";
+import FormField from "@/components/molecules/FormField";
 
 const statusOptions = [
   { value: 'Draft', label: 'Draft' },
@@ -25,6 +26,7 @@ export default function AddSalesOrderModal({
   companies = []
 }) {
   const [loading, setLoading] = useState(false)
+  const [loadingCompanies, setLoadingCompanies] = useState(false)
   const [formData, setFormData] = useState({
     Name: '',
     order_date_c: '',
@@ -36,6 +38,8 @@ export default function AddSalesOrderModal({
     notes_c: '',
     Tags: ''
   })
+
+// Companies are provided via props, no need to load them
 
   useEffect(() => {
     if (editMode && salesOrder) {
@@ -151,17 +155,19 @@ export default function AddSalesOrderModal({
               />
             </FormField>
 
-            <FormField label="Customer" required>
+<FormField label="Customer" required>
               <Select
                 value={formData.customer_id_c}
                 onChange={(e) => handleInputChange('customer_id_c', e.target.value)}
-                disabled={loading}
+                disabled={loading || loadingCompanies}
                 required
               >
-                <option value="">Select customer</option>
-                {companyOptions.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
+                <option value="">
+                  {loadingCompanies ? 'Loading companies...' : 'Select customer'}
+                </option>
+                {companies.map(company => (
+                  <option key={company.Id} value={company.Id}>
+                    {company.Name}
                   </option>
                 ))}
               </Select>
