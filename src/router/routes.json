@@ -38,19 +38,6 @@
       "redirectOnDeny": "/login"
     }
 },
-  "/sales-orders": {
-    "allow": {
-      "when": {
-        "conditions": [
-          {
-            "label": "User must be logged in to view sales orders",
-            "rule": "authenticated"
-          }
-        ]
-      },
-      "redirectOnDeny": "/login"
-    }
-  },
   "/contacts": {
     "allow": {
       "when": {

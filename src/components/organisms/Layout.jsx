@@ -14,7 +14,6 @@ const navigation = [
     { name: 'Contacts', path: '/contacts', icon: 'Users' },
     { name: 'Tasks', path: '/tasks', icon: 'CheckSquare' },
     { name: 'Quotes', path: '/quotes', icon: 'FileText' },
-    { name: 'Sales Orders', path: '/sales-orders', icon: 'ShoppingCart' },
   ];
 
   const getPageTitle = () => {

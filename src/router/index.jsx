@@ -16,7 +16,6 @@ const Companies = lazy(() => import('@/components/pages/Companies'));
 const Contacts = lazy(() => import('@/components/pages/Contacts'));
 const Tasks = lazy(() => import('@/components/pages/Tasks'));
 const Quotes = lazy(() => import('@/components/pages/Quotes'));
-const SalesOrders = lazy(() => import('@/components/pages/SalesOrders'));
 const NotFound = lazy(() => import('@/components/pages/NotFound'));
 
 const createRoute = ({
@@ -85,7 +84,6 @@ export const router = createBrowserRouter([
           createRoute({ path: "contacts", element: <Contacts /> }),
 createRoute({ path: "tasks", element: <Tasks /> }),
           createRoute({ path: "quotes", element: <Quotes /> }),
-          createRoute({ path: "sales-orders", element: <SalesOrders /> }),
         ]
       },
 
